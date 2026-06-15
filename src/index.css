@@ -74,42 +74,6 @@
   --scrollbar-thumb: #c7c2ab;
 }
 
-.theme-winvista {
-  /* Windows Vista Aero Theme */
-  --desktop-bg: #11253d; /* Vista Dark Aurora Blue */
-
-  /* Panels & Windows Colors */
-  --win-bg: rgba(35, 35, 35, 0.85); /* Aero Dark Glass */
-  --win-fg: #ffffff;
-  --win-border-light: rgba(255, 255, 255, 0.25);
-  --win-border-dark: rgba(0, 0, 0, 0.45);
-  --win-border-darkest: #000000;
-
-  /* Title Bars */
-  --title-bg-start: rgba(10, 10, 10, 0.9);
-  --title-bg-end: rgba(45, 45, 45, 0.9);
-  --title-text: #ffffff;
-
-  /* Inputs & Textbox */
-  --input-bg: #121212;
-  --input-fg: #ffffff;
-
-  /* Buttons */
-  --btn-bg: rgba(60, 60, 60, 0.85);
-  --btn-fg: #ffffff;
-
-  /* Custom Status Badges */
-  --color-live-text: #ff6b6b;
-  --color-live-bg: rgba(239, 68, 68, 0.15);
-  --color-completed-text: #4ade80;
-  --color-win-text: #4ade80;
-  --color-loss-text: #ff6b6b;
-
-  /* Tables & Scrollbar */
-  --table-header-bg: #2b2b2b;
-  --scrollbar-track: #1c1c1c;
-  --scrollbar-thumb: #4e4e4e;
-}
 
 .theme-win7 {
   /* Windows 7 Aero glass Theme */
@@ -1434,17 +1398,6 @@ body {
 /* Windows Vista / 7 Aero Styles */
 /* ========================================== */
 
-.theme-winvista .win95-raised,
-.theme-winvista .win95-sunken,
-.theme-winvista .win95-tab-pane,
-.theme-winvista .win95-groupbox,
-.theme-winvista .win95-input-control,
-.theme-winvista .win95-select-control,
-.theme-winvista .table-viewport,
-.theme-winvista .win95-status-field.field-text,
-.theme-winvista .win95-status-bar .status-bar-pane,
-.theme-winvista .win95-dropdown-menu,
-.theme-winvista .win95-banner-warning,
 .theme-win7 .win95-raised,
 .theme-win7 .win95-sunken,
 .theme-win7 .win95-tab-pane,
@@ -1461,37 +1414,24 @@ body {
   border-radius: 4px !important;
 }
 
-.theme-winvista .win95-window.main-window,
 .theme-win7 .win95-window.main-window {
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   border-radius: 8px !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-}
-
-.theme-winvista .win95-window.main-window {
-  background: rgba(35, 35, 35, 0.78) !important;
-}
-.theme-win7 .win95-window.main-window {
   background: rgba(220, 235, 248, 0.82) !important;
 }
 
-.theme-winvista .win95-title-bar,
 .theme-win7 .win95-title-bar {
   border-radius: 7px 7px 0 0;
   height: 32px;
   background: linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.2) 100%) !important;
   border-bottom: 1px solid rgba(0,0,0,0.25) !important;
-  color: #ffffff;
-}
-
-.theme-win7 .win95-title-bar {
   color: #1e1e1e !important;
   text-shadow: 0 0 8px rgba(255,255,255,0.95) !important;
 }
 
-.theme-winvista .win95-title-btn,
 .theme-win7 .win95-title-btn {
   border-radius: 4px !important;
   border: 1px solid rgba(0, 0, 0, 0.3) !important;
@@ -1502,21 +1442,18 @@ body {
   height: 18px !important;
 }
 
-.theme-winvista .win95-title-btn.close,
 .theme-win7 .win95-title-btn.close {
   background: linear-gradient(to bottom, #ff8282 0%, #d82c0e 50%, #8c0c00 100%) !important;
   color: #ffffff !important;
   border-color: rgba(0,0,0,0.4) !important;
 }
 
-.theme-winvista .win95-menu-bar,
 .theme-win7 .win95-menu-bar {
   background: rgba(255, 255, 255, 0.12) !important;
   border-bottom: 1px solid rgba(0,0,0,0.1) !important;
   color: inherit !important;
 }
 
-.theme-winvista .win95-dropdown-menu,
 .theme-win7 .win95-dropdown-menu {
   background: rgba(255, 255, 255, 0.96) !important;
   color: #000000 !important;
@@ -1525,18 +1462,15 @@ body {
   box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
 }
 
-.theme-winvista .win95-dropdown-item,
 .theme-win7 .win95-dropdown-item {
   color: #000000 !important;
 }
 
-.theme-winvista .win95-dropdown-item:hover,
 .theme-win7 .win95-dropdown-item:hover {
   background: #3b82f6 !important;
   color: #ffffff !important;
 }
 
-.theme-winvista .win95-tab-header,
 .theme-win7 .win95-tab-header {
   background: rgba(120, 140, 160, 0.15) !important;
   border: 1px solid rgba(0,0,0,0.15) !important;
@@ -1546,7 +1480,6 @@ body {
   margin-right: 2px;
 }
 
-.theme-winvista .win95-tab-header.active,
 .theme-win7 .win95-tab-header.active {
   background: rgba(255, 255, 255, 0.94) !important;
   border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) transparent rgba(0,0,0,0.15) !important;
@@ -1554,7 +1487,6 @@ body {
   font-weight: bold;
 }
 
-.theme-winvista .win95-tab-pane,
 .theme-win7 .win95-tab-pane {
   background: rgba(255, 255, 255, 0.9) !important;
   color: #111111 !important;
@@ -1563,7 +1495,6 @@ body {
   box-shadow: 0 3px 10px rgba(0,0,0,0.06) !important;
 }
 
-.theme-winvista .win95-match-card-win,
 .theme-win7 .win95-match-card-win {
   border: 1px solid rgba(0,0,0,0.1) !important;
   border-radius: 5px !important;
@@ -1572,7 +1503,6 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
 }
 
-.theme-winvista .win95-match-card-title,
 .theme-win7 .win95-match-card-title {
   background: linear-gradient(to bottom, #fcfcfc, #ececec) !important;
   color: #333333 !important;
@@ -1580,7 +1510,6 @@ body {
   border-bottom: 1px solid #dfdfdf !important;
 }
 
-.theme-winvista .win95-btn,
 .theme-win7 .win95-btn {
   border-radius: 4px !important;
   border: 1px solid #b0b0b0 !important;
@@ -1589,7 +1518,6 @@ body {
   color: #111111 !important;
 }
 
-.theme-winvista .win95-btn:active:not(:disabled),
 .theme-win7 .win95-btn:active:not(:disabled) {
   background: #cccccc !important;
   border-color: #909090 !important;
@@ -1597,7 +1525,6 @@ body {
   padding: 3px 10px !important; /* Disable Win95 shift */
 }
 
-.theme-winvista .retro-table th,
 .theme-win7 .retro-table th {
   background: linear-gradient(to bottom, #fcfcfc, #e8edf4) !important;
   border: 1px solid #b9c9da !important;
@@ -1605,26 +1532,22 @@ body {
   color: #1e1e1e !important;
 }
 
-/* Vista / 7 Scrollbars */
-.theme-win7 ::-webkit-scrollbar,
-.theme-winvista ::-webkit-scrollbar {
+/* 7 Scrollbars */
+.theme-win7 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
 }
-.theme-win7 ::-webkit-scrollbar-track,
-.theme-winvista ::-webkit-scrollbar-track {
+.theme-win7 ::-webkit-scrollbar-track {
   background: rgba(240,240,240,0.5) !important;
   background-image: none !important;
 }
-.theme-win7 ::-webkit-scrollbar-thumb,
-.theme-winvista ::-webkit-scrollbar-thumb {
+.theme-win7 ::-webkit-scrollbar-thumb {
   background: linear-gradient(to right, #dbe8f5, #b8cde4) !important;
   border: 1px solid #9bbcd8 !important;
   border-radius: 6px !important;
   box-shadow: none !important;
 }
-.theme-win7 ::-webkit-scrollbar-thumb:hover,
-.theme-winvista ::-webkit-scrollbar-thumb:hover {
+.theme-win7 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to right, #ecf4fc, #9dc4ec) !important;
 }
 
@@ -1797,10 +1720,553 @@ body {
   background: #cdcdcd !important;
   border: none !important;
   border-radius: 0px !important;
-  box-shadow: none !important;
+  background: #cdcdcd !important;
 }
 .theme-win10 ::-webkit-scrollbar-thumb:hover {
   background: #a6a6a6 !important;
 }
 
+/* ========================================== */
+/* Desktop Shortcuts & Sizing Layouts */
+/* ========================================== */
 
+.win95-desktop {
+  flex: 1;
+  padding: 20px 20px 60px 20px;
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 30px);
+}
+
+.desktop-window {
+  flex: 1 1 320px;
+  min-width: 320px;
+  height: calc(100vh - 90px);
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.matches-window {
+  max-width: 720px;
+}
+
+.standings-window {
+  max-width: 580px;
+}
+
+/* Desktop shortcuts list */
+.desktop-shortcuts {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 10;
+  user-select: none;
+}
+
+.desktop-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 75px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.shortcut-icon {
+  font-size: 26px;
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.shortcut-label {
+  font-size: 10px;
+  color: #ffffff;
+  background-color: transparent;
+  padding: 1px 4px;
+  text-shadow: 1px 1px 2px #000;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.desktop-shortcut.selected .shortcut-label {
+  background-color: #000080;
+  color: #ffffff;
+  outline: 1px dotted #ffffff;
+}
+
+/* For flat modern theme text */
+.theme-win10 .shortcut-label {
+  text-shadow: none;
+  font-weight: 500;
+}
+
+/* ========================================== */
+/* Window Focus Styles */
+/* ========================================== */
+
+.win95-window.inactive {
+  z-index: 50 !important;
+}
+
+.theme-win95 .win95-window.inactive .win95-title-bar {
+  background: var(--win-border-dark) !important;
+  color: var(--win-bg) !important;
+}
+.theme-winxp .win95-window.inactive .win95-title-bar {
+  background: linear-gradient(to bottom, #7a96df 0%, #a2b8ea 100%) !important;
+  border-bottom-color: #5570b5 !important;
+}
+.theme-winvista .win95-window.inactive .win95-title-bar,
+.theme-win7 .win95-window.inactive .win95-title-bar {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.05) 100%) !important;
+  color: rgba(255,255,255,0.6) !important;
+}
+.theme-win7 .win95-window.inactive .win95-title-bar {
+  color: #555555 !important;
+  text-shadow: none !important;
+}
+.theme-win10 .win95-window.inactive .win95-title-bar {
+  background: #f3f3f3 !important;
+  color: #999999 !important;
+}
+
+/* ========================================== */
+/* Start Menu Container */
+/* ========================================== */
+
+.win95-start-menu {
+  position: absolute;
+  bottom: 30px;
+  left: 2px;
+  width: 180px;
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  display: flex;
+  z-index: 1005;
+  padding: 2px;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  user-select: none;
+}
+
+.start-menu-sidebar {
+  width: 24px;
+  background: linear-gradient(to top, #000080, #1084d0);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.start-menu-sidebar .sidebar-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+}
+
+.start-menu-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2px 0;
+}
+
+.start-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  color: var(--win-fg);
+  text-align: left;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+}
+
+.start-menu-item:hover {
+  background: var(--title-bg-start);
+  color: #ffffff;
+}
+
+.start-menu-item .item-icon {
+  font-size: 14px;
+  margin-right: 8px;
+  width: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.start-menu-item .item-label {
+  flex: 1;
+}
+
+.start-menu-divider {
+  height: 1px;
+  background: var(--win-border-dark);
+  border-bottom: 1px solid var(--win-border-light);
+  margin: 4px 1px;
+}
+
+/* Start Menu Submenu (Themes flyout) */
+.start-menu-item.has-submenu:hover .start-menu-submenu {
+  display: flex;
+}
+
+.start-menu-submenu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  left: 100%;
+  bottom: 0;
+  width: 150px;
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  padding: 2px;
+  z-index: 1010;
+}
+
+.submenu-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  color: var(--win-fg);
+  text-align: left;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+}
+
+.submenu-item:hover {
+  background: var(--title-bg-start);
+  color: #ffffff;
+}
+
+.submenu-item.active {
+  font-weight: bold;
+}
+
+/* ========================================== */
+/* Loading Progress Animation */
+/* ========================================== */
+
+.loading-progress-bar {
+  overflow: hidden;
+}
+
+.progress-blocks {
+  width: 30px;
+  height: 100%;
+  background: #000080;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: loading-blocks 1.5s infinite linear;
+}
+
+.theme-winxp .progress-blocks {
+  background: linear-gradient(to bottom, #8ee600, #5da000);
+}
+.theme-winvista .progress-blocks,
+.theme-win7 .progress-blocks {
+  background: #3b82f6;
+}
+.theme-win10 .progress-blocks {
+  background: #0078d7;
+}
+
+@keyframes loading-blocks {
+  0% { left: -30px; }
+  100% { left: 100%; }
+}
+
+/* ========================================== */
+/* Windows XP lunalizations */
+/* ========================================== */
+
+.theme-winxp .win95-taskbar {
+  background: linear-gradient(to bottom, #245dd7 0%, #3a8bf5 10%, #245dd7 20%, #1941a5 100%) !important;
+  border-top: 1px solid #1a3c75 !important;
+  box-shadow: none !important;
+  height: 30px;
+}
+.theme-winxp .win95-start-btn {
+  background: linear-gradient(to bottom, #388a08 0%, #61ac27 10%, #388a08 30%, #225603 100%) !important;
+  border: 1px solid #2d6b05 !important;
+  border-radius: 0 10px 10px 0 !important;
+  color: #ffffff !important;
+  font-style: italic;
+  text-shadow: 1px 1px 1px #000;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3) !important;
+  padding: 2px 12px !important;
+  margin-top: 1px;
+}
+.theme-winxp .win95-start-btn:active {
+  background: #225603 !important;
+  padding: 2px 12px !important;
+}
+.theme-winxp .taskbar-item {
+  background: #3876e6 !important;
+  border: 1px solid #1a3c75 !important;
+  color: #ffffff !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+.theme-winxp .taskbar-item.active {
+  background: #1e52c4 !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+.theme-winxp .win95-system-tray {
+  background: #0f40aa !important;
+  border: 1px solid #0c3080 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+.theme-winxp .win95-start-menu {
+  border: 1px solid #1a3c75 !important;
+  background: #d3e5fa !important;
+  border-radius: 6px 6px 0 0 !important;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+}
+.theme-winxp .start-menu-item:hover {
+  background: #316ac5 !important;
+}
+.theme-winxp .start-menu-submenu {
+  background: #d3e5fa !important;
+  border: 1px solid #1a3c75 !important;
+  border-radius: 4px !important;
+}
+.theme-winxp .submenu-item:hover {
+  background: #316ac5 !important;
+}
+
+/* ========================================== */
+/* Windows Vista / 7 Aerolizations */
+/* ========================================== */
+
+.theme-winvista .win95-taskbar,
+.theme-win7 .win95-taskbar {
+  background: rgba(35, 35, 35, 0.75) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: none !important;
+}
+.theme-winvista .win95-start-btn,
+.theme-win7 .win95-start-btn {
+  background: radial-gradient(circle, #7dbbe6 0%, #1e62a2 70%, #0d3b66 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.4) !important;
+  border-radius: 50% !important;
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff !important;
+  box-shadow: 0 0 5px #7dbbe6, inset 0 1px 1px rgba(255,255,255,0.4) !important;
+}
+.theme-winvista .win95-start-btn span,
+.theme-win7 .win95-start-btn span {
+  display: none;
+}
+.theme-winvista .win95-start-btn .start-icon,
+.theme-win7 .win95-start-btn .start-icon {
+  display: inline !important;
+  font-size: 16px;
+}
+.theme-winvista .taskbar-item,
+.theme-win7 .taskbar-item {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+}
+.theme-winvista .taskbar-item.active,
+.theme-win7 .taskbar-item.active {
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+.theme-winvista .win95-system-tray,
+.theme-win7 .win95-system-tray {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.theme-winvista .win95-start-menu,
+.theme-win7 .win95-start-menu {
+  background: rgba(20, 20, 20, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px 6px 0 0 !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+.theme-winvista .start-menu-item,
+.theme-win7 .start-menu-item {
+  color: #ffffff !important;
+}
+.theme-winvista .start-menu-item:hover,
+.theme-win7 .start-menu-item:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+.theme-winvista .start-menu-submenu,
+.theme-win7 .start-menu-submenu {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.theme-winvista .submenu-item,
+.theme-win7 .submenu-item {
+  color: #ffffff !important;
+}
+.theme-winvista .submenu-item:hover,
+.theme-win7 .submenu-item:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ========================================== */
+/* Windows 10 Modernizations */
+/* ========================================== */
+
+.theme-win10 .win95-taskbar {
+  background: #101010 !important;
+  border-top: none !important;
+  height: 36px;
+  color: #ffffff !important;
+}
+.theme-win10 .win95-start-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  width: 40px;
+  height: 100%;
+}
+.theme-win10 .win95-start-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+.theme-win10 .win95-start-btn span {
+  display: none;
+}
+.theme-win10 .win95-start-btn .start-icon {
+  display: inline !important;
+  font-size: 16px;
+}
+.theme-win10 .taskbar-item {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+  height: 100%;
+  max-width: 150px;
+  margin-right: 2px;
+}
+.theme-win10 .taskbar-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+.theme-win10 .taskbar-item.active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-bottom: 2px solid #0078d7 !important;
+  font-weight: normal !important;
+  padding: 2px 8px !important;
+}
+.theme-win10 .win95-system-tray {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+.theme-win10 .win95-start-menu {
+  background: #1f1f1f !important;
+  border: 1px solid #333333 !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+  width: 200px;
+}
+.theme-win10 .start-menu-sidebar {
+  display: none;
+}
+.theme-win10 .start-menu-item {
+  color: #ffffff !important;
+  padding: 10px 12px !important;
+}
+.theme-win10 .start-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+.theme-win10 .start-menu-submenu {
+  background: #1f1f1f !important;
+  border: 1px solid #333333 !important;
+  width: 160px;
+}
+.theme-win10 .submenu-item {
+  color: #ffffff !important;
+  padding: 8px 12px !important;
+}
+.theme-win10 .submenu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ========================================== */
+/* Mobile stacking & sizing responsiveness */
+/* ========================================== */
+
+@media (max-width: 768px) {
+  .win95-desktop {
+    padding: 10px 10px 50px 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+  }
+
+  .desktop-shortcuts {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .desktop-window {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .win95-tab-pane {
+    max-height: 450px;
+  }
+}
