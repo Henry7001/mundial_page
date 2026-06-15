@@ -387,6 +387,13 @@ function App() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [showReadme, setShowReadme] = useState(false);
   const [selectedShortcut, setSelectedShortcut] = useState(null);
+  const [activeMobileTab, setActiveMobileTab] = useState('matches'); // 'matches' | 'standings' | 'settings'
+  const [winPositions, setWinPositions] = useState({
+    matches: { x: 140, y: 8 },
+    standings: { x: 720, y: 8 },
+    readme: { x: 280, y: 80 },
+  });
+  const dragStateRef = useRef(null);
 
   // Digital clock helper for taskbar tray
   const [currentTime, setCurrentTime] = useState('');
@@ -444,6 +451,35 @@ function App() {
     document.addEventListener('click', handleOutsideClick);
     return () => document.removeEventListener('click', handleOutsideClick);
   }, []);
+
+  // Window drag-and-drop for desktop
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragStateRef.current) return;
+      const { key, sx, sy, px, py } = dragStateRef.current;
+      setWinPositions(prev => ({
+        ...prev,
+        [key]: {
+          x: Math.max(0, px + (e.clientX - sx)),
+          y: Math.max(0, py + (e.clientY - sy)),
+        },
+      }));
+    };
+    const onUp = () => { dragStateRef.current = null; };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  const handleDragStart = (key, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const p = winPositions[key];
+    dragStateRef.current = { key, sx: e.clientX, sy: e.clientY, px: p.x, py: p.y };
+  };
 
   // Desktop shortcut click handler
   const handleShortcutClick = (shortcutId, action) => {
@@ -633,544 +669,557 @@ function App() {
     }
   };
 
+  const renderMatchesContent = () => {
+    return (
+      <div className="win95-view-content">
+        {/* Search & Filters */}
+        <fieldset className="win95-groupbox filter-groupbox">
+          <legend>Buscar y Filtrar Partidos</legend>
+          <div className="win95-filters-grid">
+            <div className="filter-input-row">
+              <label htmlFor="search-input">Texto:</label>
+              <input 
+                id="search-input"
+                type="text" 
+                placeholder="Buscar país, estadio, ciudad..." 
+                className="win95-input-control"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="filter-select-row">
+              <label htmlFor="stage-filter">Fase:</label>
+              <select 
+                id="stage-filter"
+                className="win95-select-control"
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+              >
+                <option value="all">Todas las Fases</option>
+                <option value="group">Fase de Grupos</option>
+                <option value="knockout">Fase Eliminatoria</option>
+              </select>
+            </div>
+            <div className="filter-select-row">
+              <label htmlFor="status-filter">Estado:</label>
+              <select 
+                id="status-filter"
+                className="win95-select-control"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Todos los Estados</option>
+                <option value="completed">Finalizados</option>
+                <option value="live">En Vivo</option>
+                <option value="scheduled">Programados</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        {/* Matches Cards */}
+        {filteredMatches.length === 0 ? (
+          <div className="win95-sunken empty-state-retro">
+            <span className="empty-state-icon">⚽</span>
+            <h3>No se encontraron registros</h3>
+            <p>Verifique los criterios de búsqueda o cambie los filtros.</p>
+          </div>
+        ) : (
+          <div className="win95-matches-grid">
+            {filteredMatches.map((match) => {
+              const homeTeamName = match.home_team?.name || 'Por definir';
+              const awayTeamName = match.away_team?.name || 'Por definir';
+              const homeTeamCode = match.home_team_country || '';
+              const awayTeamCode = match.away_team_country || '';
+              
+              const homeTeamEs = getCountryNameEs(homeTeamCode, homeTeamName);
+              const awayTeamEs = getCountryNameEs(awayTeamCode, awayTeamName);
+              const homeFlag = getCountryFlagUrl(homeTeamCode, homeTeamName);
+              const awayFlag = getCountryFlagUrl(awayTeamCode, awayTeamName);
+
+              const isHomeWinner = match.status === 'completed' && match.winner_code === homeTeamCode;
+              const isAwayWinner = match.status === 'completed' && match.winner_code === awayTeamCode;
+              
+              let statusLabel = 'Programado';
+              let statusClass = 'scheduled';
+              if (match.status === 'completed') {
+                statusLabel = 'Finalizado';
+                statusClass = 'completed';
+              } else if (match.status === 'in_progress') {
+                statusLabel = 'En Vivo';
+                statusClass = 'live';
+              }
+
+              return (
+                <div key={match.id} className={`win95-match-card-win ${statusClass}`}>
+                  <div className="win95-match-card-title">
+                    <span>Match #{match.id} - {getStageNameEs(match.stage_name)}</span>
+                    <span className={`match-badge-retro ${statusClass}`}>{statusLabel}</span>
+                  </div>
+                  <div className="win95-match-card-body">
+                    <div className="retro-team-rows">
+                      {/* Home Team */}
+                      <div className="retro-team-row">
+                        <div className="retro-team-name-flag">
+                          <img src={homeFlag} alt={homeTeamEs} className="retro-flag" />
+                          <span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
+                            {homeTeamEs}
+                          </span>
+                        </div>
+                        {match.status === 'in_progress' ? (
+                          <input 
+                            type="number" 
+                            min="0"
+                            className="win95-match-score-input"
+                            value={match.home_team.goals}
+                            onChange={(e) => handleScoreChange(match.id, 'home', parseInt(e.target.value) || 0)}
+                          />
+                        ) : (
+                          <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
+                            {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.home_team.goals : '-'}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Away Team */}
+                      <div className="retro-team-row">
+                        <div className="retro-team-name-flag">
+                          <img src={awayFlag} alt={awayTeamEs} className="retro-flag" />
+                          <span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
+                            {awayTeamEs}
+                          </span>
+                        </div>
+                        {match.status === 'in_progress' ? (
+                          <input 
+                            type="number" 
+                            min="0"
+                            className="win95-match-score-input"
+                            value={match.away_team.goals}
+                            onChange={(e) => handleScoreChange(match.id, 'away', parseInt(e.target.value) || 0)}
+                          />
+                        ) : (
+                          <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
+                            {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.away_team.goals : '-'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {match.status === 'completed' && (match.home_team.penalties > 0 || match.away_team.penalties > 0) ? (
+                      <div className="retro-match-penalties">
+                        Penaltis: {match.home_team.penalties} - {match.away_team.penalties}
+                      </div>
+                    ) : null}
+
+                    <div className="retro-match-details">
+                      <div className="retro-detail-line">
+                        <span className="icon">📍</span>
+                        <span>{match.venue}, {match.location}</span>
+                      </div>
+                      <div className="retro-detail-line">
+                        <span className="icon">📅</span>
+                        <span>{formatMatchDate(match.datetime)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderStandingsContent = () => {
+    return (
+      <div className="win95-standings-grid">
+        {groups.map((group) => (
+          <div key={group.letter} className="win95-group-box-win">
+            <div className="win95-group-card-title">
+              <span>Grupo {group.letter}</span>
+            </div>
+            <div className="win95-sunken table-viewport">
+              <table className="retro-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '30px' }}>POS</th>
+                    <th>Equipo</th>
+                    <th className="text-center">PJ</th>
+                    <th className="text-center">G</th>
+                    <th className="text-center">E</th>
+                    <th className="text-center">P</th>
+                    <th className="text-center hide-mobile">GF</th>
+                    <th className="text-center hide-mobile">GC</th>
+                    <th className="text-center">DG</th>
+                    <th className="text-center text-bold">PTS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.teams.map((team, idx) => {
+                    const isQualifying = idx < 2;
+                    const teamEs = getCountryNameEs(team.country, team.name);
+                    const flagUrl = getCountryFlagUrl(team.country, team.name);
+
+                    return (
+                      <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
+                        <td className="text-center text-bold idx-cell">
+                          {idx + 1}
+                        </td>
+                        <td>
+                          <div className="retro-table-team">
+                            <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
+                            <span className="retro-table-team-name" title={teamEs}>
+                              {teamEs}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="text-center">{team.games_played}</td>
+                        <td className="text-center">{team.wins}</td>
+                        <td className="text-center">{team.draws}</td>
+                        <td className="text-center">{team.losses}</td>
+                        <td className="text-center hide-mobile">{team.goals_for}</td>
+                        <td className="text-center hide-mobile">{team.goals_against}</td>
+                        <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>
+                          {team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}
+                        </td>
+                        <td className="text-center text-bold pts-cell">{team.group_points}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const hasLiveMatches = matches.some(m => m.status === 'in_progress');
   return (
     <div className={`win95-app-container theme-${theme}`}>
-      {/* Desktop Environment */}
-      <div className="win95-desktop">
-        
-        {/* Desktop Icons */}
-        <div className="desktop-shortcuts">
-          <div 
-            className={`desktop-shortcut ${selectedShortcut === 'matches' ? 'selected' : ''}`}
-            onClick={() => handleShortcutClick('matches', () => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); })}
-          >
-            <span className="shortcut-icon">⚽</span>
-            <span className="shortcut-label">Partidos 2026</span>
-          </div>
-          <div 
-            className={`desktop-shortcut ${selectedShortcut === 'standings' ? 'selected' : ''}`}
-            onClick={() => handleShortcutClick('standings', () => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); })}
-          >
-            <span className="shortcut-icon">📊</span>
-            <span className="shortcut-label">Posiciones</span>
-          </div>
-          <div 
-            className={`desktop-shortcut ${selectedShortcut === 'reset' ? 'selected' : ''}`}
-            onClick={() => handleShortcutClick('reset', handleSalir)}
-          >
-            <span className="shortcut-icon">🗑️</span>
-            <span className="shortcut-label">Papelera de Reciclaje</span>
-          </div>
-          <div 
-            className={`desktop-shortcut ${selectedShortcut === 'readme' ? 'selected' : ''}`}
-            onClick={() => handleShortcutClick('readme', () => { setShowReadme(true); setFocusedWindow('readme'); })}
-          >
-            <span className="shortcut-icon">📝</span>
-            <span className="shortcut-label">LEEME.txt</span>
-          </div>
-        </div>
-
-        {/* Loading Window Dialog */}
-        {loading ? (
-          <div className="win95-window loading-dialog" style={{ width: '300px', margin: 'auto', zIndex: 1000, height: 'auto', minHeight: 'auto', alignSelf: 'center' }}>
-            <div className="win95-title-bar">
-              <div className="win95-title-text">
-                <span className="win95-title-icon">⌛</span>
-                <span>Iniciando MundialStats...</span>
-              </div>
+      
+      {/* Desktop Environment (Widescreen Only) */}
+      <div className="desktop-shell-wrapper">
+        <div className="win95-desktop">
+          {/* Desktop Icons */}
+          <div className="desktop-shortcuts">
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'matches' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('matches', () => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); })}
+            >
+              <span className="shortcut-icon">⚽</span>
+              <span className="shortcut-label">Partidos 2026</span>
             </div>
-            <div className="win95-dialog-body" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="win95-hourglass" style={{ fontSize: '32px', marginBottom: '10px' }}>⌛</div>
-              <p>Cargando base de datos de la Copa Mundial 2026...</p>
-              <div className="win95-sunken loading-progress-bar" style={{ height: '14px', marginTop: '15px', position: 'relative', background: '#fff' }}>
-                <div className="progress-blocks"></div>
-              </div>
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'standings' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('standings', () => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); })}
+            >
+              <span className="shortcut-icon">📊</span>
+              <span className="shortcut-label">Posiciones</span>
+            </div>
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'reset' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('reset', handleSalir)}
+            >
+              <span className="shortcut-icon">🗑️</span>
+              <span className="shortcut-label">Papelera de Reciclaje</span>
+            </div>
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'readme' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('readme', () => { setShowReadme(true); setFocusedWindow('readme'); })}
+            >
+              <span className="shortcut-icon">📝</span>
+              <span className="shortcut-label">LEEME.txt</span>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Matches Window (Partidos) */}
-            {isMatchesOpen && !isMatchesMinimized && (
-              <div 
-                className={`win95-window desktop-window matches-window ${focusedWindow === 'matches' ? 'focused' : 'inactive'}`}
-                onClick={() => setFocusedWindow('matches')}
-                style={{ zIndex: focusedWindow === 'matches' ? 100 : 50 }}
-              >
-                {/* Title Bar */}
-                <div className="win95-title-bar">
-                  <div className="win95-title-text">
-                    <span className="win95-title-icon">⚽</span>
-                    <span>Partidos - MundialStats 2026</span>
-                  </div>
-                  <div className="win95-title-buttons">
-                    <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsMatchesMinimized(true); }}>_</button>
-                    <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
-                    <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsMatchesOpen(false); }}>X</button>
-                  </div>
+
+          {/* Loading Window Dialog */}
+          {loading ? (
+            <div className="win95-window loading-dialog" style={{ width: '300px', margin: 'auto', zIndex: 1000, height: 'auto', minHeight: 'auto', alignSelf: 'center' }}>
+              <div className="win95-title-bar">
+                <div className="win95-title-text">
+                  <span className="win95-title-icon">⌛</span>
+                  <span>Iniciando MundialStats...</span>
                 </div>
-
-                {/* Menu Bar */}
-                <div className="win95-menu-bar">
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'archivo_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_m'); }}>
-                      <u>A</u>rchivo
-                    </button>
-                    {activeMenu === 'archivo_m' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
-                          <u>S</u>alir (Reiniciar)
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'ver_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_m'); }}>
-                      <u>V</u>er
-                    </button>
-                    {activeMenu === 'ver_m' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); closeMenu(); }}>
-                          Mostrar Tabla de <u>P</u>osiciones
-                        </button>
-                        <div className="win95-dropdown-separator"></div>
-                        <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
-                          <u>A</u>ctualizar datos (Fetch)
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'tema_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_m'); }}>
-                      <u>T</u>ema
-                    </button>
-                    {activeMenu === 'tema_m' && (
-                      <div className="win95-dropdown-menu">
-                        <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
-                          {theme === 'win95' && '✓ '}Windows 95 / 98
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
-                          {theme === 'winxp' && '✓ '}Windows XP (Luna)
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
-                          {theme === 'win7' && '✓ '}Windows 7 (Aero)
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                          {theme === 'win10' && '✓ '}Windows 10
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'ayuda_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_m'); }}>
-                      A<u>y</u>uda
-                    </button>
-                    {activeMenu === 'ayuda_m' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
-                          <u>A</u>cerca de MundialStats...
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              </div>
+              <div className="win95-dialog-body" style={{ textAlign: 'center', padding: '20px' }}>
+                <div className="win95-hourglass" style={{ fontSize: '32px', marginBottom: '10px' }}>⌛</div>
+                <p>Cargando base de datos de la Copa Mundial 2026...</p>
+                <div className="win95-sunken loading-progress-bar" style={{ height: '14px', marginTop: '15px', position: 'relative', background: '#fff' }}>
+                  <div className="progress-blocks"></div>
                 </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Matches Window (Partidos) */}
+              {isMatchesOpen && !isMatchesMinimized && (
+                <div 
+                  className={`win95-window desktop-window matches-window ${focusedWindow === 'matches' ? 'focused' : 'inactive'}`}
+                  onClick={() => setFocusedWindow('matches')}
+                  style={{ zIndex: focusedWindow === 'matches' ? 100 : 50, left: winPositions.matches.x, top: winPositions.matches.y }}
+                >
+                  {/* Title Bar */}
+                  <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('matches', e)} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <div className="win95-title-text">
+                      <span className="win95-title-icon">⚽</span>
+                      <span>Partidos - MundialStats 2026</span>
+                    </div>
+                    <div className="win95-title-buttons">
+                      <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsMatchesMinimized(true); }}>_</button>
+                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsMatchesOpen(false); }}>X</button>
+                    </div>
+                  </div>
 
-                {/* Window Body */}
-                <div className="win95-window-body">
-                  {/* Status info bar */}
-                  <div className="win95-toolbar">
-                    <div className="win95-status-field field-badge">
-                      {isFallback ? (
-                        <span className="retro-badge fallback">⚠️ SIN CONEXIÓN</span>
-                      ) : (
-                        <span className="retro-badge live">🖧 CONECTADO</span>
+                  {/* Menu Bar */}
+                  <div className="win95-menu-bar">
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'archivo_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_m'); }}>
+                        <u>A</u>rchivo
+                      </button>
+                      {activeMenu === 'archivo_m' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
+                            <u>S</u>alir (Reiniciar)
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <div className="win95-status-field field-text">
-                      {isFallback 
-                        ? 'Se cargaron datos locales por falta de conexión.' 
-                        : 'Conectado a la API en vivo.'}
-                    </div>
-                    <button className="win95-btn toolbar-btn" onClick={fetchData} disabled={isRefreshing}>
-                      <RefreshCw size={12} className={isRefreshing ? 'spinner' : ''} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
-                      <span>{isRefreshing ? 'Cargando...' : 'Reintentar'}</span>
-                    </button>
-                  </div>
 
-                  {/* Warning banner */}
-                  {hasLiveMatches && (
-                    <div className="win95-banner-warning">
-                      <span className="warning-icon">⚡</span>
-                      <div className="warning-text">
-                        <strong>Partidos en vivo:</strong> Puedes editar los marcadores para simular la tabla.
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Sunken content viewport */}
-                  <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto' }}>
-                    <div className="win95-view-content">
-                      {/* Search & Filters */}
-                      <fieldset className="win95-groupbox filter-groupbox">
-                        <legend>Buscar y Filtrar Partidos</legend>
-                        <div className="win95-filters-grid">
-                          <div className="filter-input-row">
-                            <label htmlFor="search-input">Texto:</label>
-                            <input 
-                              id="search-input"
-                              type="text" 
-                              placeholder="Buscar país, estadio, ciudad..." 
-                              className="win95-input-control"
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                          </div>
-                          <div className="filter-select-row">
-                            <label htmlFor="stage-filter">Fase:</label>
-                            <select 
-                              id="stage-filter"
-                              className="win95-select-control"
-                              value={stageFilter}
-                              onChange={(e) => setStageFilter(e.target.value)}
-                            >
-                              <option value="all">Todas las Fases</option>
-                              <option value="group">Fase de Grupos</option>
-                              <option value="knockout">Fase Eliminatoria</option>
-                            </select>
-                          </div>
-                          <div className="filter-select-row">
-                            <label htmlFor="status-filter">Estado:</label>
-                            <select 
-                              id="status-filter"
-                              className="win95-select-control"
-                              value={statusFilter}
-                              onChange={(e) => setStatusFilter(e.target.value)}
-                            >
-                              <option value="all">Todos los Estados</option>
-                              <option value="completed">Finalizados</option>
-                              <option value="live">En Vivo</option>
-                              <option value="scheduled">Programados</option>
-                            </select>
-                          </div>
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ver_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_m'); }}>
+                        <u>V</u>er
+                      </button>
+                      {activeMenu === 'ver_m' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); closeMenu(); }}>
+                            Mostrar Tabla de <u>P</u>osiciones
+                          </button>
+                          <div className="win95-dropdown-separator"></div>
+                          <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
+                            <u>A</u>ctualizar datos (Fetch)
+                          </button>
                         </div>
-                      </fieldset>
+                      )}
+                    </div>
 
-                      {/* Matches Cards */}
-                      {filteredMatches.length === 0 ? (
-                        <div className="win95-sunken empty-state-retro">
-                          <span className="empty-state-icon">⚽</span>
-                          <h3>No se encontraron registros</h3>
-                          <p>Verifique los criterios de búsqueda o cambie los filtros.</p>
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'tema_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_m'); }}>
+                        <u>T</u>ema
+                      </button>
+                      {activeMenu === 'tema_m' && (
+                        <div className="win95-dropdown-menu">
+                          <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
+                            {theme === 'win95' && '✓ '}Windows 95 / 98
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
+                            {theme === 'winxp' && '✓ '}Windows XP (Luna)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
+                            {theme === 'win7' && '✓ '}Windows 7 (Aero)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
+                            {theme === 'win10' && '✓ '}Windows 10
+                          </button>
                         </div>
-                      ) : (
-                        <div className="win95-matches-grid">
-                          {filteredMatches.map((match) => {
-                            const homeTeamName = match.home_team?.name || 'Por definir';
-                            const awayTeamName = match.away_team?.name || 'Por definir';
-                            const homeTeamCode = match.home_team_country || '';
-                            const awayTeamCode = match.away_team_country || '';
-                            
-                            const homeTeamEs = getCountryNameEs(homeTeamCode, homeTeamName);
-                            const awayTeamEs = getCountryNameEs(awayTeamCode, awayTeamName);
-                            const homeFlag = getCountryFlagUrl(homeTeamCode, homeTeamName);
-                            const awayFlag = getCountryFlagUrl(awayTeamCode, awayTeamName);
+                      )}
+                    </div>
 
-                            const isHomeWinner = match.status === 'completed' && match.winner_code === homeTeamCode;
-                            const isAwayWinner = match.status === 'completed' && match.winner_code === awayTeamCode;
-                            
-                            let statusLabel = 'Programado';
-                            let statusClass = 'scheduled';
-                            if (match.status === 'completed') {
-                              statusLabel = 'Finalizado';
-                              statusClass = 'completed';
-                            } else if (match.status === 'in_progress') {
-                              statusLabel = 'En Vivo';
-                              statusClass = 'live';
-                            }
-
-                            return (
-                              <div key={match.id} className={`win95-match-card-win ${statusClass}`}>
-                                <div className="win95-match-card-title">
-                                  <span>Match #{match.id} - {getStageNameEs(match.stage_name)}</span>
-                                  <span className={`match-badge-retro ${statusClass}`}>{statusLabel}</span>
-                                </div>
-                                <div className="win95-match-card-body">
-                                  <div className="retro-team-rows">
-                                    {/* Home Team */}
-                                    <div className="retro-team-row">
-                                      <div className="retro-team-name-flag">
-                                        <img src={homeFlag} alt={homeTeamEs} className="retro-flag" />
-                                        <span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
-                                          {homeTeamEs}
-                                        </span>
-                                      </div>
-                                      {match.status === 'in_progress' ? (
-                                        <input 
-                                          type="number" 
-                                          min="0"
-                                          className="win95-match-score-input"
-                                          value={match.home_team.goals}
-                                          onChange={(e) => handleScoreChange(match.id, 'home', parseInt(e.target.value) || 0)}
-                                        />
-                                      ) : (
-                                        <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
-                                          {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.home_team.goals : '-'}
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    {/* Away Team */}
-                                    <div className="retro-team-row">
-                                      <div className="retro-team-name-flag">
-                                        <img src={awayFlag} alt={awayTeamEs} className="retro-flag" />
-                                        <span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
-                                          {awayTeamEs}
-                                        </span>
-                                      </div>
-                                      {match.status === 'in_progress' ? (
-                                        <input 
-                                          type="number" 
-                                          min="0"
-                                          className="win95-match-score-input"
-                                          value={match.away_team.goals}
-                                          onChange={(e) => handleScoreChange(match.id, 'away', parseInt(e.target.value) || 0)}
-                                        />
-                                      ) : (
-                                        <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
-                                          {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.away_team.goals : '-'}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {match.status === 'completed' && (match.home_team.penalties > 0 || match.away_team.penalties > 0) ? (
-                                    <div className="retro-match-penalties">
-                                      Penaltis: {match.home_team.penalties} - {match.away_team.penalties}
-                                    </div>
-                                  ) : null}
-
-                                  <div className="retro-match-details">
-                                    <div className="retro-detail-line">
-                                      <span className="icon">📍</span>
-                                      <span>{match.venue}, {match.location}</span>
-                                    </div>
-                                    <div className="retro-detail-line">
-                                      <span className="icon">📅</span>
-                                      <span>{formatMatchDate(match.datetime)}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ayuda_m' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_m'); }}>
+                        A<u>y</u>uda
+                      </button>
+                      {activeMenu === 'ayuda_m' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
+                            <u>A</u>cerca de MundialStats...
+                          </button>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Windows Status Bar */}
-                <div className="win95-status-bar">
-                  <div className="status-bar-pane pane-desc">
-                    Partidos: {matches.length} cargados
-                  </div>
-                  <div className="status-bar-pane pane-time">
-                    Mundial 2026
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Standings Window (Tabla de Posiciones) */}
-            {isStandingsOpen && !isStandingsMinimized && (
-              <div 
-                className={`win95-window desktop-window standings-window ${focusedWindow === 'standings' ? 'focused' : 'inactive'}`}
-                onClick={() => setFocusedWindow('standings')}
-                style={{ zIndex: focusedWindow === 'standings' ? 100 : 50 }}
-              >
-                {/* Title Bar */}
-                <div className="win95-title-bar">
-                  <div className="win95-title-text">
-                    <span className="win95-title-icon">📊</span>
-                    <span>Tabla de Posiciones - MundialStats 2026</span>
-                  </div>
-                  <div className="win95-title-buttons">
-                    <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsStandingsMinimized(true); }}>_</button>
-                    <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
-                    <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsStandingsOpen(false); }}>X</button>
-                  </div>
-                </div>
-
-                {/* Menu Bar */}
-                <div className="win95-menu-bar">
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'archivo_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_s'); }}>
-                      <u>A</u>rchivo
-                    </button>
-                    {activeMenu === 'archivo_s' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
-                          <u>S</u>alir (Reiniciar)
-                        </button>
+                  {/* Window Body */}
+                  <div className="win95-window-body">
+                    {/* Status info bar */}
+                    <div className="win95-toolbar">
+                      <div className="win95-status-field field-badge">
+                        {isFallback ? (
+                          <span className="retro-badge fallback">⚠️ SIN CONEXIÓN</span>
+                        ) : (
+                          <span className="retro-badge live">🖧 CONECTADO</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'ver_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_s'); }}>
-                      <u>V</u>er
-                    </button>
-                    {activeMenu === 'ver_s' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); closeMenu(); }}>
-                          Mostrar <u>P</u>artidos
-                        </button>
-                        <div className="win95-dropdown-separator"></div>
-                        <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
-                          <u>A</u>ctualizar datos (Fetch)
-                        </button>
+                      <div className="win95-status-field field-text">
+                        {isFallback 
+                          ? 'Se cargaron datos locales por falta de conexión.' 
+                          : 'Conectado a la API en vivo.'}
                       </div>
-                    )}
-                  </div>
+                      <button className="win95-btn toolbar-btn" onClick={fetchData} disabled={isRefreshing}>
+                        <RefreshCw size={12} className={isRefreshing ? 'spinner' : ''} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+                        <span>{isRefreshing ? 'Cargando...' : 'Reintentar'}</span>
+                      </button>
+                    </div>
 
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'tema_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_s'); }}>
-                      <u>T</u>ema
-                    </button>
-                    {activeMenu === 'tema_s' && (
-                      <div className="win95-dropdown-menu">
-                        <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
-                          {theme === 'win95' && '✓ '}Windows 95 / 98
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
-                          {theme === 'winxp' && '✓ '}Windows XP (Luna)
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
-                          {theme === 'win7' && '✓ '}Windows 7 (Aero)
-                        </button>
-                        <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                          {theme === 'win10' && '✓ '}Windows 10
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="win95-menu-item-wrapper">
-                    <button className={`win95-menu-btn ${activeMenu === 'ayuda_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_s'); }}>
-                      A<u>y</u>uda
-                    </button>
-                    {activeMenu === 'ayuda_s' && (
-                      <div className="win95-dropdown-menu">
-                        <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
-                          <u>A</u>cerca de MundialStats...
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Window Body */}
-                <div className="win95-window-body">
-                  <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto' }}>
-                    <div className="win95-standings-grid">
-                      {groups.map((group) => (
-                        <div key={group.letter} className="win95-group-box-win">
-                          <div className="win95-group-card-title">
-                            <span>Grupo {group.letter}</span>
-                          </div>
-                          <div className="win95-sunken table-viewport">
-                            <table className="retro-table">
-                              <thead>
-                                <tr>
-                                  <th style={{ width: '30px' }}>POS</th>
-                                  <th>Equipo</th>
-                                  <th className="text-center">PJ</th>
-                                  <th className="text-center">G</th>
-                                  <th className="text-center">E</th>
-                                  <th className="text-center">P</th>
-                                  <th className="text-center hide-mobile">GF</th>
-                                  <th className="text-center hide-mobile">GC</th>
-                                  <th className="text-center">DG</th>
-                                  <th className="text-center text-bold">PTS</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {group.teams.map((team, idx) => {
-                                  const isQualifying = idx < 2;
-                                  const teamEs = getCountryNameEs(team.country, team.name);
-                                  const flagUrl = getCountryFlagUrl(team.country, team.name);
-
-                                  return (
-                                    <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
-                                      <td className="text-center text-bold idx-cell">
-                                        {idx + 1}
-                                      </td>
-                                      <td>
-                                        <div className="retro-table-team">
-                                          <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
-                                          <span className="retro-table-team-name" title={teamEs}>
-                                            {teamEs}
-                                          </span>
-                                        </div>
-                                      </td>
-                                      <td className="text-center">{team.games_played}</td>
-                                      <td className="text-center">{team.wins}</td>
-                                      <td className="text-center">{team.draws}</td>
-                                      <td className="text-center">{team.losses}</td>
-                                      <td className="text-center hide-mobile">{team.goals_for}</td>
-                                      <td className="text-center hide-mobile">{team.goals_against}</td>
-                                      <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>
-                                        {team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}
-                                      </td>
-                                      <td className="text-center text-bold pts-cell">{team.group_points}</td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
+                    {/* Warning banner */}
+                    {hasLiveMatches && (
+                      <div className="win95-banner-warning">
+                        <span className="warning-icon">⚡</span>
+                        <div className="warning-text">
+                          <strong>Partidos en vivo:</strong> Puedes editar los marcadores para simular la tabla.
                         </div>
-                      ))}
+                      </div>
+                    )}
+
+                    {/* Sunken content viewport */}
+                    <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto' }}>
+                      {renderMatchesContent()}
+                    </div>
+                  </div>
+
+                  {/* Windows Status Bar */}
+                  <div className="win95-status-bar">
+                    <div className="status-bar-pane pane-desc">
+                      Partidos: {matches.length} cargados
+                    </div>
+                    <div className="status-bar-pane pane-time">
+                      Mundial 2026
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Windows Status Bar */}
-                <div className="win95-status-bar">
-                  <div className="status-bar-pane pane-desc">
-                    Tablas de Posiciones: Grupos A - L
+              {/* Standings Window (Tabla de Posiciones) */}
+              {isStandingsOpen && !isStandingsMinimized && (
+                <div 
+                  className={`win95-window desktop-window standings-window ${focusedWindow === 'standings' ? 'focused' : 'inactive'}`}
+                  onClick={() => setFocusedWindow('standings')}
+                  style={{ zIndex: focusedWindow === 'standings' ? 100 : 50, left: winPositions.standings.x, top: winPositions.standings.y }}
+                >
+                  {/* Title Bar */}
+                  <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('standings', e)} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <div className="win95-title-text">
+                      <span className="win95-title-icon">📊</span>
+                      <span>Tabla de Posiciones - MundialStats 2026</span>
+                    </div>
+                    <div className="win95-title-buttons">
+                      <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsStandingsMinimized(true); }}>_</button>
+                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsStandingsOpen(false); }}>X</button>
+                    </div>
                   </div>
-                  <div className="status-bar-pane pane-time">
-                    Mundial 2026
+
+                  {/* Menu Bar */}
+                  <div className="win95-menu-bar">
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'archivo_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_s'); }}>
+                        <u>A</u>rchivo
+                      </button>
+                      {activeMenu === 'archivo_s' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
+                            <u>S</u>alir (Reiniciar)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ver_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_s'); }}>
+                        <u>V</u>er
+                      </button>
+                      {activeMenu === 'ver_s' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); closeMenu(); }}>
+                            Mostrar <u>P</u>artidos
+                          </button>
+                          <div className="win95-dropdown-separator"></div>
+                          <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
+                            <u>A</u>ctualizar datos (Fetch)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'tema_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_s'); }}>
+                        <u>T</u>ema
+                      </button>
+                      {activeMenu === 'tema_s' && (
+                        <div className="win95-dropdown-menu">
+                          <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
+                            {theme === 'win95' && '✓ '}Windows 95 / 98
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
+                            {theme === 'winxp' && '✓ '}Windows XP (Luna)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
+                            {theme === 'win7' && '✓ '}Windows 7 (Aero)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
+                            {theme === 'win10' && '✓ '}Windows 10
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ayuda_s' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_s'); }}>
+                        A<u>y</u>uda
+                      </button>
+                      {activeMenu === 'ayuda_s' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
+                            <u>A</u>cerca de MundialStats...
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Window Body */}
+                  <div className="win95-window-body">
+                    <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto' }}>
+                      {renderStandingsContent()}
+                    </div>
+                  </div>
+
+                  {/* Windows Status Bar */}
+                  <div className="win95-status-bar">
+                    <div className="status-bar-pane pane-desc">
+                      Tablas de Posiciones: Grupos A - L
+                    </div>
+                    <div className="status-bar-pane pane-time">
+                      Mundial 2026
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* LEEME.txt Block Editor (Notepad) */}
-            {showReadme && (
-              <div 
-                className={`win95-window readme-window ${focusedWindow === 'readme' ? 'focused' : 'inactive'}`}
-                onClick={() => setFocusedWindow('readme')}
-                style={{ zIndex: focusedWindow === 'readme' ? 100 : 50, position: 'absolute', top: '20%', left: '15%', width: '320px', height: '350px', minHeight: 'auto', alignSelf: 'center' }}
-              >
-                <div className="win95-title-bar">
-                  <div className="win95-title-text">
-                    <span className="win95-title-icon">📝</span>
-                    <span>LEEME.txt - Bloc de notas</span>
+              {/* LEEME.txt Block Editor (Notepad) */}
+              {showReadme && (
+                <div 
+                  className={`win95-window desktop-window readme-window ${focusedWindow === 'readme' ? 'focused' : 'inactive'}`}
+                  onClick={() => setFocusedWindow('readme')}
+                  style={{ zIndex: focusedWindow === 'readme' ? 100 : 50, left: winPositions.readme.x, top: winPositions.readme.y, width: '320px', height: '350px' }}
+                >
+                  <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('readme', e)} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <div className="win95-title-text">
+                      <span className="win95-title-icon">📝</span>
+                      <span>LEEME.txt - Bloc de notas</span>
+                    </div>
+                    <div className="win95-title-buttons">
+                      <button className="win95-title-btn close" onClick={() => setShowReadme(false)}>X</button>
+                    </div>
                   </div>
-                  <div className="win95-title-buttons">
-                    <button className="win95-title-btn close" onClick={() => setShowReadme(false)}>X</button>
-                  </div>
-                </div>
-                <div className="win95-window-body">
-                  <textarea 
-                    className="win95-input-control text-editor-area" 
-                    readOnly 
-                    value={`=== MundialStats 2026 ===
+                  <div className="win95-window-body">
+                    <textarea 
+                      className="win95-input-control text-editor-area" 
+                      readOnly 
+                      value={`=== MundialStats 2026 ===
 
 Bienvenido al simulador interactivo de la Copa Mundial de la FIFA 2026.
 
@@ -1179,199 +1228,385 @@ Instrucciones:
 2. Abre la "Tabla de Posiciones" para ver el impacto en tiempo real.
 3. Usa la barra de tareas e Inicio para cambiar el tema visual de Windows (95, XP, Vista, 7, 10).
 4. Para reiniciar el software, usa la Papelera de Reciclaje o el menú de Inicio.`}
-                    style={{ flex: 1, resize: 'none', fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.3' }}
-                  />
-                  <div className="about-btn-row" style={{ marginTop: '8px' }}>
-                    <button className="win95-btn" onClick={() => setShowReadme(false)}>Cerrar</button>
+                      style={{ flex: 1, resize: 'none', fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.3' }}
+                    />
+                    <div className="about-btn-row" style={{ marginTop: '8px' }}>
+                      <button className="win95-btn" onClick={() => setShowReadme(false)}>Cerrar</button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+            </>
+          )}
+
+          {/* About Dialog moved to app-container root — see below desktop-shell-wrapper */}
+        </div>
+
+        {/* Taskbar fixed bottom */}
+        <div className="win95-taskbar">
+          {/* Start Button */}
+          <button 
+            className={`win95-start-btn ${isStartMenuOpen ? 'active' : ''}`}
+            onClick={(e) => { e.stopPropagation(); setIsStartMenuOpen(prev => !prev); }}
+          >
+            <span className="start-icon">🏁</span>
+            <span>Inicio</span>
+          </button>
+
+          <div className="win95-taskbar-divider"></div>
+
+          {/* Task Buttons */}
+          <div className="win95-active-tasks">
+            {isMatchesOpen && (
+              <button 
+                className={`taskbar-item ${(!isMatchesMinimized && focusedWindow === 'matches') ? 'active' : ''}`}
+                onClick={() => {
+                  if (isMatchesMinimized) {
+                    setIsMatchesMinimized(false);
+                    setFocusedWindow('matches');
+                  } else if (focusedWindow === 'matches') {
+                    setIsMatchesMinimized(true);
+                  } else {
+                    setFocusedWindow('matches');
+                  }
+                }}
+              >
+                <span className="taskbar-icon">⚽</span>
+                <span>Partidos</span>
+              </button>
             )}
-          </>
-        )}
 
-        {/* About Dialog (Acerca de) Modal */}
-        {showAbout && (
-          <div className="win95-modal-overlay">
-            <div className="win95-window win95-dialog about-dialog">
-              <div className="win95-title-bar">
-                <div className="win95-title-text">
-                  <span>Acerca de MundialStats</span>
-                </div>
-                <div className="win95-title-buttons">
-                  <button className="win95-title-btn close" onClick={() => setShowAbout(false)}>X</button>
-                </div>
-              </div>
-              <div className="win95-dialog-body">
-                <div className="about-main-info">
-                  <div className="about-system-icon">🏆</div>
-                  <div className="about-text-content">
-                    <h2>MundialStats 2026</h2>
-                    <p>Versión 1.0 (Build 9500)</p>
-                    <p>Derechos reservados © 2026 Antigravity Co.</p>
-                    <p className="license-text">Este programa está licenciado para el uso interactivo de simulación de la Copa del Mundo 2026.</p>
-                  </div>
-                </div>
-                <div className="win95-sunken about-description-box">
-                  Este software realiza solicitudes HTTP directas a una base de datos pública de fútbol en GitHub (openfootball/worldcup.json) para obtener los resultados programados del Mundial 2026. Permite modificar interactivamente los marcadores de los partidos en vivo para actualizar instantáneamente las tablas de posiciones de los Grupos A al L.
-                </div>
-                <div className="about-btn-row">
-                  <button className="win95-btn default-btn" onClick={() => setShowAbout(false)}>Aceptar</button>
-                </div>
-              </div>
-            </div>
+            {isStandingsOpen && (
+              <button 
+                className={`taskbar-item ${(!isStandingsMinimized && focusedWindow === 'standings') ? 'active' : ''}`}
+                onClick={() => {
+                  if (isStandingsMinimized) {
+                    setIsStandingsMinimized(false);
+                    setFocusedWindow('standings');
+                  } else if (focusedWindow === 'standings') {
+                    setIsStandingsMinimized(true);
+                  } else {
+                    setFocusedWindow('standings');
+                  }
+                }}
+              >
+                <span className="taskbar-icon">📊</span>
+                <span>Posiciones</span>
+              </button>
+            )}
           </div>
-        )}
 
-      </div>
+          {/* System Tray */}
+          <div className="win95-system-tray">
+            {isFallback ? (
+              <span className="tray-icon" title="Sin conexión - Fallback local">⚠️</span>
+            ) : (
+              <span className="tray-icon" title="Conexión en vivo activa">🖧</span>
+            )}
+            <span className="tray-time">{currentTime}</span>
+          </div>
+        </div>
 
-      {/* Taskbar fixed bottom */}
-      <div className="win95-taskbar">
-        {/* Start Button */}
-        <button 
-          className={`win95-start-btn ${isStartMenuOpen ? 'active' : ''}`}
-          onClick={(e) => { e.stopPropagation(); setIsStartMenuOpen(prev => !prev); }}
-        >
-          <span className="start-icon">🏁</span>
-          <span>Inicio</span>
-        </button>
-
-        <div className="win95-taskbar-divider"></div>
-
-        {/* Task Buttons */}
-        <div className="win95-active-tasks">
-          {isMatchesOpen && (
-            <button 
-              className={`taskbar-item ${(!isMatchesMinimized && focusedWindow === 'matches') ? 'active' : ''}`}
-              onClick={() => {
-                if (isMatchesMinimized) {
+        {/* Start Menu Popup */}
+        {isStartMenuOpen && (
+          <div className="win95-start-menu">
+            <div className="start-menu-sidebar">
+              <span className="sidebar-text">
+                {theme === 'win95' ? 'Windows 95' :
+                 theme === 'winxp' ? 'Windows XP' :
+                 theme === 'win7' ? 'Windows 7' :
+                 theme === 'win10' ? 'Windows 10' : 'Windows'}
+              </span>
+            </div>
+            <div className="start-menu-list">
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  setIsMatchesOpen(true);
                   setIsMatchesMinimized(false);
                   setFocusedWindow('matches');
-                } else if (focusedWindow === 'matches') {
-                  setIsMatchesMinimized(true);
-                } else {
-                  setFocusedWindow('matches');
-                }
-              }}
-            >
-              <span className="taskbar-icon">⚽</span>
-              <span>Partidos</span>
-            </button>
-          )}
-
-          {isStandingsOpen && (
-            <button 
-              className={`taskbar-item ${(!isStandingsMinimized && focusedWindow === 'standings') ? 'active' : ''}`}
-              onClick={() => {
-                if (isStandingsMinimized) {
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">⚽</span>
+                <span className="item-label">Partidos 2026</span>
+              </button>
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  setIsStandingsOpen(true);
                   setIsStandingsMinimized(false);
                   setFocusedWindow('standings');
-                } else if (focusedWindow === 'standings') {
-                  setIsStandingsMinimized(true);
-                } else {
-                  setFocusedWindow('standings');
-                }
-              }}
-            >
-              <span className="taskbar-icon">📊</span>
-              <span>Posiciones</span>
-            </button>
-          )}
-        </div>
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">📊</span>
+                <span className="item-label">Tabla de Posiciones</span>
+              </button>
+              
+              {/* Submenu for Themes */}
+              <div className="start-menu-item has-submenu">
+                <span className="item-icon">🎨</span>
+                <span className="item-label">Temas ➔</span>
+                <div className="start-menu-submenu">
+                  <button className={`submenu-item ${theme === 'win95' ? 'active' : ''}`} onClick={() => { toggleTheme('win95'); setIsStartMenuOpen(false); }}>
+                    Windows 95 / 98
+                  </button>
+                  <button className={`submenu-item ${theme === 'winxp' ? 'active' : ''}`} onClick={() => { toggleTheme('winxp'); setIsStartMenuOpen(false); }}>
+                    Windows XP (Luna)
+                  </button>
+                  <button className={`submenu-item ${theme === 'win7' ? 'active' : ''}`} onClick={() => { toggleTheme('win7'); setIsStartMenuOpen(false); }}>
+                    Windows 7 (Aero)
+                  </button>
+                  <button className={`submenu-item ${theme === 'win10' ? 'active' : ''}`} onClick={() => { toggleTheme('win10'); setIsStartMenuOpen(false); }}>
+                    Windows 10
+                  </button>
+                </div>
+              </div>
 
-        {/* System Tray */}
-        <div className="win95-system-tray">
-          {isFallback ? (
-            <span className="tray-icon" title="Sin conexión - Fallback local">⚠️</span>
-          ) : (
-            <span className="tray-icon" title="Conexión en vivo activa">🖧</span>
-          )}
-          <span className="tray-time">{currentTime}</span>
-        </div>
+              <div className="start-menu-divider"></div>
+
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  handleSalir();
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">🔄</span>
+                <span className="item-label">Reiniciar Sistema</span>
+              </button>
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  setShowAbout(true);
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">❔</span>
+                <span className="item-label">Acerca de...</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Start Menu Popup */}
-      {isStartMenuOpen && (
-        <div className="win95-start-menu">
-          <div className="start-menu-sidebar">
-            <span className="sidebar-text">
-              {theme === 'win95' ? 'Windows 95' :
-               theme === 'winxp' ? 'Windows XP' :
-               theme === 'win7' ? 'Windows 7' :
-               theme === 'win10' ? 'Windows 10' : 'Windows'}
-            </span>
+      {/* Mobile OS Shell Environment (Mobiles & Tablets Only) */}
+      <div className="win95-mobile-shell">
+        {/* Top Status Bar based on theme */}
+        {theme === 'win10' ? (
+          /* Android Status Bar */
+          <div className="status-bar-android">
+            <div className="status-bar-left">
+              <span className="notif-icon">⚽</span>
+              <span className="notif-icon">💬</span>
+            </div>
+            <div className="status-bar-center">{currentTime}</div>
+            <div className="status-bar-right">
+              <span className="signal-icon">📶</span>
+              <span className="battery-icon">🔋 85%</span>
+            </div>
           </div>
-          <div className="start-menu-list">
-            <button 
-              className="start-menu-item"
-              onClick={() => {
-                setIsMatchesOpen(true);
-                setIsMatchesMinimized(false);
-                setFocusedWindow('matches');
-                setIsStartMenuOpen(false);
-              }}
-            >
-              <span className="item-icon">⚽</span>
-              <span className="item-label">Partidos 2026</span>
+        ) : theme === 'win7' ? (
+          /* iOS Status Bar */
+          <div className="status-bar-ios">
+            <div className="status-bar-left">
+              <span className="carrier-text">Antigravity LTE</span>
+              <span className="signal-icon">📶</span>
+            </div>
+            <div className="status-bar-center">{currentTime}</div>
+            <div className="status-bar-right">
+              <span className="battery-percent">85%</span>
+              <span className="battery-icon">🔋</span>
+            </div>
+          </div>
+        ) : (
+          /* Windows Mobile / Pocket PC Status Bar */
+          <div className="status-bar-winmobile">
+            <div className="status-bar-left">
+              <span className="winmobile-logo">🏁</span>
+              <span className="winmobile-title">Pocket PC</span>
+            </div>
+            <div className="status-bar-right">
+              <span className="signal-icon">📶</span>
+              <span className="time-text">{currentTime}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Header / Navigation Bar */}
+        <div className="mobile-header">
+          {theme === 'win10' ? (
+            /* Android Header */
+            <div className="header-android">
+              <h1>MundialStats 2026</h1>
+              <button className="android-action-btn" onClick={fetchData} disabled={isRefreshing} title="Actualizar">
+                🔄
+              </button>
+            </div>
+          ) : theme === 'win7' ? (
+            /* iOS Header */
+            <div className="header-ios">
+              <button className="ios-nav-btn-left" onClick={handleSalir}>Reset</button>
+              <h1>MundialStats</h1>
+              <button className="ios-nav-btn-right" onClick={fetchData} disabled={isRefreshing}>Refresh</button>
+            </div>
+          ) : (
+            /* Windows Mobile Header */
+            <div className="header-winmobile">
+              <span>MundialStats 2026</span>
+              <button className="winmobile-ok-btn" onClick={fetchData} disabled={isRefreshing}>ok</button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Content Area */}
+        <div className="mobile-content-area">
+          {loading ? (
+            <div className="win95-loading-wrapper" style={{ margin: 'auto', textAlign: 'center' }}>
+              <div className="win95-hourglass">⌛</div>
+              <p>Cargando base de datos...</p>
+            </div>
+          ) : (
+            <>
+              {activeMobileTab === 'matches' && (
+                <div className="mobile-tab-content matches-tab">
+                  {renderMatchesContent()}
+                </div>
+              )}
+
+              {activeMobileTab === 'standings' && (
+                <div className="mobile-tab-content standings-tab">
+                  {renderStandingsContent()}
+                </div>
+              )}
+
+              {activeMobileTab === 'settings' && (
+                <div className="mobile-tab-content settings-tab">
+                  <div className="mobile-settings-page">
+                    {/* Theme selection panel */}
+                    <fieldset className="win95-groupbox">
+                      <legend>Estilo de Interfaz</legend>
+                      <div className="theme-options-list">
+                        <button className={`win95-btn ${theme === 'winxp' ? 'default-btn' : ''}`} onClick={() => toggleTheme('winxp')}>
+                          Windows Mobile
+                        </button>
+                        <button className={`win95-btn ${theme === 'win7' ? 'default-btn' : ''}`} onClick={() => toggleTheme('win7')}>
+                          iOS
+                        </button>
+                        <button className={`win95-btn ${theme === 'win10' ? 'default-btn' : ''}`} onClick={() => toggleTheme('win10')}>
+                          Android
+                        </button>
+                      </div>
+                    </fieldset>
+
+                    {/* About application */}
+                    <fieldset className="win95-groupbox" style={{ marginTop: '15px' }}>
+                      <legend>Acerca de</legend>
+                      <p style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                        <strong>MundialStats 2026</strong><br/>
+                        Versión 1.0 (Mobile Edition)<br/>
+                        Simulador interactivo de la Copa del Mundo 2026.<br/>
+                        Derechos reservados © 2026 Antigravity Co.
+                      </p>
+                      <button className="win95-btn" style={{ marginTop: '10px', width: '100%' }} onClick={() => setShowAbout(true)}>
+                        Ver Licencia
+                      </button>
+                    </fieldset>
+
+                    {/* Reset system */}
+                    <button className="win95-btn" style={{ marginTop: '20px', width: '100%', color: 'var(--color-loss-text)', fontWeight: 'bold' }} onClick={handleSalir}>
+                      Reiniciar Simulación
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Mobile Bottom Navigation Bar based on theme */}
+        {theme === 'win10' ? (
+          /* Android Bottom Navigation */
+          <div className="nav-android">
+            <button className={`nav-android-item ${activeMobileTab === 'matches' ? 'active' : ''}`} onClick={() => setActiveMobileTab('matches')}>
+              <span className="nav-icon">📅</span>
+              <span className="nav-label">Partidos</span>
             </button>
-            <button 
-              className="start-menu-item"
-              onClick={() => {
-                setIsStandingsOpen(true);
-                setIsStandingsMinimized(false);
-                setFocusedWindow('standings');
-                setIsStartMenuOpen(false);
-              }}
-            >
-              <span className="item-icon">📊</span>
-              <span className="item-label">Tabla de Posiciones</span>
+            <button className={`nav-android-item ${activeMobileTab === 'standings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('standings')}>
+              <span className="nav-icon">🏆</span>
+              <span className="nav-label">Posiciones</span>
             </button>
-            
-            {/* Submenu for Themes */}
-            <div className="start-menu-item has-submenu">
-              <span className="item-icon">🎨</span>
-              <span className="item-label">Temas ➔</span>
-              <div className="start-menu-submenu">
-                <button className={`submenu-item ${theme === 'win95' ? 'active' : ''}`} onClick={() => { toggleTheme('win95'); setIsStartMenuOpen(false); }}>
-                  Windows 95 / 98
-                </button>
-                <button className={`submenu-item ${theme === 'winxp' ? 'active' : ''}`} onClick={() => { toggleTheme('winxp'); setIsStartMenuOpen(false); }}>
-                  Windows XP (Luna)
-                </button>
-                <button className={`submenu-item ${theme === 'win7' ? 'active' : ''}`} onClick={() => { toggleTheme('win7'); setIsStartMenuOpen(false); }}>
-                  Windows 7 (Aero)
-                </button>
-                <button className={`submenu-item ${theme === 'win10' ? 'active' : ''}`} onClick={() => { toggleTheme('win10'); setIsStartMenuOpen(false); }}>
-                  Windows 10
-                </button>
+            <button className={`nav-android-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
+              <span className="nav-icon">⚙️</span>
+              <span className="nav-label">Ajustes</span>
+            </button>
+          </div>
+        ) : theme === 'win7' ? (
+          /* iOS Bottom Navigation */
+          <div className="nav-ios">
+            <button className={`nav-ios-item ${activeMobileTab === 'matches' ? 'active' : ''}`} onClick={() => setActiveMobileTab('matches')}>
+              <span className="nav-icon">📅</span>
+              <span className="nav-label">Partidos</span>
+            </button>
+            <button className={`nav-ios-item ${activeMobileTab === 'standings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('standings')}>
+              <span className="nav-icon">🏆</span>
+              <span className="nav-label">Tablas</span>
+            </button>
+            <button className={`nav-ios-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
+              <span className="nav-icon">⚙️</span>
+              <span className="nav-label">Ajustes</span>
+            </button>
+          </div>
+        ) : (
+          /* Windows Mobile / Pocket PC Command Bar */
+          <div className="nav-winmobile">
+            <button className={`nav-winmobile-item ${activeMobileTab === 'matches' ? 'active' : ''}`} onClick={() => setActiveMobileTab('matches')}>
+              Partidos
+            </button>
+            <button className={`nav-winmobile-item ${activeMobileTab === 'standings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('standings')}>
+              Posiciones
+            </button>
+            <button className={`nav-winmobile-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
+              Herram.
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* About Dialog (Acerca de) Modal — rendered at app root so it shows on both desktop & mobile */}
+      {showAbout && (
+        <div className="win95-modal-overlay">
+          <div className="win95-window win95-dialog about-dialog">
+            <div className="win95-title-bar">
+              <div className="win95-title-text">
+                <span>Acerca de MundialStats</span>
+              </div>
+              <div className="win95-title-buttons">
+                <button className="win95-title-btn close" onClick={() => setShowAbout(false)}>X</button>
               </div>
             </div>
-
-            <div className="start-menu-divider"></div>
-
-            <button 
-              className="start-menu-item"
-              onClick={() => {
-                handleSalir();
-                setIsStartMenuOpen(false);
-              }}
-            >
-              <span className="item-icon">🔄</span>
-              <span className="item-label">Reiniciar Sistema</span>
-            </button>
-            <button 
-              className="start-menu-item"
-              onClick={() => {
-                setShowAbout(true);
-                setIsStartMenuOpen(false);
-              }}
-            >
-              <span className="item-icon">❔</span>
-              <span className="item-label">Acerca de...</span>
-            </button>
+            <div className="win95-dialog-body">
+              <div className="about-main-info">
+                <div className="about-system-icon">🏆</div>
+                <div className="about-text-content">
+                  <h2>MundialStats 2026</h2>
+                  <p>Versión 1.0 (Build 9500)</p>
+                  <p>Derechos reservados © 2026 Antigravity Co.</p>
+                  <p className="license-text">Este programa está licenciado para el uso interactivo de simulación de la Copa del Mundo 2026.</p>
+                </div>
+              </div>
+              <div className="win95-sunken about-description-box">
+                Este software realiza solicitudes HTTP directas a una base de datos pública de fútbol en GitHub (openfootball/worldcup.json) para obtener los resultados programados del Mundial 2026. Permite modificar interactivamente los marcadores de los partidos en vivo para actualizar instantáneamente las tablas de posiciones de los Grupos A al L.
+              </div>
+              <div className="about-btn-row">
+                <button className="win95-btn default-btn" onClick={() => setShowAbout(false)}>Aceptar</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

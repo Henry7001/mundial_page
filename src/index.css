@@ -166,22 +166,117 @@ body {
 
 /* Container Structure */
 .win95-app-container {
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--desktop-bg);
+  overflow: hidden;
+}
+
+/* Desktop shell wrapper — visible on desktop, hidden on mobile via media query */
+.desktop-shell-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .win95-desktop {
   flex: 1;
   padding: 0;
   position: relative;
-  overflow-y: auto;
-  display: flex;
-  justify-content: center;
+  overflow: hidden;
+  /* No flex centering — windows are absolute-positioned */
 }
 
-/* Main Application Window */
+/* Desktop draggable windows */
+.desktop-window {
+  position: absolute !important;
+  width: 560px !important;
+  height: calc(100% - 16px) !important;
+  min-height: 400px !important;
+  min-width: 300px !important;
+  /* Restore retro borders that .win95-window resets */
+  border-top: 2px solid var(--win-border-light) !important;
+  border-left: 2px solid var(--win-border-light) !important;
+  border-right: 2px solid var(--win-border-darkest) !important;
+  border-bottom: 2px solid var(--win-border-darkest) !important;
+  box-shadow:
+    inset 1px 1px 0 var(--win-border-light),
+    inset -1px -1px 0 var(--win-border-dark),
+    4px 4px 10px rgba(0,0,0,0.25) !important;
+}
+.desktop-window.standings-window {
+  width: 540px !important;
+}
+.desktop-window.readme-window {
+  width: 320px !important;
+  height: 350px !important;
+  min-height: unset !important;
+}
+.desktop-window.focused {
+  box-shadow:
+    inset 1px 1px 0 var(--win-border-light),
+    inset -1px -1px 0 var(--win-border-dark),
+    6px 6px 16px rgba(0,0,0,0.35) !important;
+}
+.desktop-window.inactive {
+  opacity: 0.92;
+}
+
+/* Desktop icon shortcuts (top-left) */
+.desktop-shortcuts {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+  pointer-events: none; /* let clicks pass unless on a shortcut */
+}
+
+.desktop-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 72px;
+  padding: 4px 6px;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: all;
+  border: 1px solid transparent;
+}
+
+.desktop-shortcut:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.desktop-shortcut.selected {
+  background: rgba(0, 0, 128, 0.5);
+  border: 1px dotted rgba(255,255,255,0.8);
+}
+
+.shortcut-icon {
+  font-size: 28px;
+  display: block;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
+}
+
+.shortcut-label {
+  font-size: 10px;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+/* Main Application Window base */
 .win95-window {
   background: var(--win-bg);
   color: var(--win-fg);
@@ -1266,7 +1361,6 @@ body {
 .theme-winxp, .theme-winxp * {
   font-family: Tahoma, Arial, sans-serif !important;
 }
-.theme-winvista, .theme-winvista *,
 .theme-win7, .theme-win7 * {
   font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
 }
@@ -1826,12 +1920,8 @@ body {
   background: linear-gradient(to bottom, #7a96df 0%, #a2b8ea 100%) !important;
   border-bottom-color: #5570b5 !important;
 }
-.theme-winvista .win95-window.inactive .win95-title-bar,
 .theme-win7 .win95-window.inactive .win95-title-bar {
   background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.05) 100%) !important;
-  color: rgba(255,255,255,0.6) !important;
-}
-.theme-win7 .win95-window.inactive .win95-title-bar {
   color: #555555 !important;
   text-shadow: none !important;
 }
@@ -1995,7 +2085,6 @@ body {
 .theme-winxp .progress-blocks {
   background: linear-gradient(to bottom, #8ee600, #5da000);
 }
-.theme-winvista .progress-blocks,
 .theme-win7 .progress-blocks {
   background: #3b82f6;
 }
@@ -2073,7 +2162,6 @@ body {
 /* Windows Vista / 7 Aerolizations */
 /* ========================================== */
 
-.theme-winvista .win95-taskbar,
 .theme-win7 .win95-taskbar {
   background: rgba(35, 35, 35, 0.75) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -2081,7 +2169,6 @@ body {
   -webkit-backdrop-filter: blur(10px);
   box-shadow: none !important;
 }
-.theme-winvista .win95-start-btn,
 .theme-win7 .win95-start-btn {
   background: radial-gradient(circle, #7dbbe6 0%, #1e62a2 70%, #0d3b66 100%) !important;
   border: 1px solid rgba(0, 0, 0, 0.4) !important;
@@ -2095,16 +2182,13 @@ body {
   color: #ffffff !important;
   box-shadow: 0 0 5px #7dbbe6, inset 0 1px 1px rgba(255,255,255,0.4) !important;
 }
-.theme-winvista .win95-start-btn span,
 .theme-win7 .win95-start-btn span {
   display: none;
 }
-.theme-winvista .win95-start-btn .start-icon,
 .theme-win7 .win95-start-btn .start-icon {
   display: inline !important;
   font-size: 16px;
 }
-.theme-winvista .taskbar-item,
 .theme-win7 .taskbar-item {
   background: rgba(255, 255, 255, 0.15) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -2112,19 +2196,16 @@ body {
   border-radius: 3px !important;
   box-shadow: none !important;
 }
-.theme-winvista .taskbar-item.active,
 .theme-win7 .taskbar-item.active {
   background: rgba(255, 255, 255, 0.3) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
-.theme-winvista .win95-system-tray,
 .theme-win7 .win95-system-tray {
   background: rgba(0, 0, 0, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
   color: #ffffff !important;
   box-shadow: none !important;
 }
-.theme-winvista .win95-start-menu,
 .theme-win7 .win95-start-menu {
   background: rgba(20, 20, 20, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -2133,24 +2214,19 @@ body {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
 }
-.theme-winvista .start-menu-item,
 .theme-win7 .start-menu-item {
   color: #ffffff !important;
 }
-.theme-winvista .start-menu-item:hover,
 .theme-win7 .start-menu-item:hover {
   background: rgba(255, 255, 255, 0.2) !important;
 }
-.theme-winvista .start-menu-submenu,
 .theme-win7 .start-menu-submenu {
   background: rgba(20, 20, 20, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
-.theme-winvista .submenu-item,
 .theme-win7 .submenu-item {
   color: #ffffff !important;
 }
-.theme-winvista .submenu-item:hover,
 .theme-win7 .submenu-item:hover {
   background: rgba(255, 255, 255, 0.2) !important;
 }
@@ -2242,31 +2318,741 @@ body {
 /* Mobile stacking & sizing responsiveness */
 /* ========================================== */
 
+/* ========================================== */
+/* Mobile Shell Layout & Containers */
+/* ========================================== */
+
+.win95-mobile-shell {
+  display: none; /* Hidden by default on desktop */
+}
+
+/* Base styles for status bars */
+.status-bar-android, .status-bar-ios, .status-bar-winmobile {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 11px;
+  user-select: none;
+  z-index: 100;
+  width: 100%;
+}
+
+/* Base styles for headers */
+.mobile-header {
+  width: 100%;
+  z-index: 100;
+}
+.header-android, .header-ios, .header-winmobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Base style for content area */
+.mobile-content-area {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-tab-content {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-tab-content.matches-tab,
+.mobile-tab-content.standings-tab {
+  padding: 8px;
+}
+
+.mobile-tab-content .win95-view-content {
+  padding: 0;
+  margin: 0;
+  height: auto !important;
+  min-height: unset !important;
+  max-height: unset !important;
+  display: flex;
+  flex-direction: column;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide desktop scroll bars in mobile viewports */
+.win95-mobile-shell .win95-view-content {
+  overflow-y: visible !important;
+}
+
+/* Settings tab style */
+.settings-tab {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.mobile-settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.theme-options-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Bottom Nav bar base styles */
+.nav-android, .nav-ios, .nav-winmobile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  user-select: none;
+  z-index: 100;
+}
+
+/* ========================================== */
+/* 1. Windows Mobile Theme (Pocket PC) Styles */
+/* ========================================== */
+
+/* Top Status Bar */
+.status-bar-winmobile {
+  background: #3a6ea5; /* Pocket PC Classic Steel Blue */
+  color: #ffffff;
+  border-bottom: 1px solid #1c3b60;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  height: 22px;
+}
+.theme-winxp .status-bar-winmobile {
+  background: linear-gradient(to bottom, #245dd7 0%, #0c3080 100%);
+  border-bottom: 1px solid #1a3c75;
+}
+.status-bar-winmobile .winmobile-logo {
+  font-size: 12px;
+  margin-right: 4px;
+}
+.status-bar-winmobile .winmobile-title {
+  font-weight: bold;
+}
+
+/* Header */
+.header-winmobile {
+  background: var(--win-bg);
+  height: 32px;
+  border-bottom: 1.5px solid var(--win-border-dark);
+  color: var(--win-fg);
+  font-weight: bold;
+  font-size: 12px;
+}
+.header-winmobile .winmobile-ok-btn {
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(to bottom, #a0d468 0%, #5cb85c 100%);
+  border: 1px solid #4cae4c;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  outline: none;
+  text-transform: lowercase;
+}
+.header-winmobile .winmobile-ok-btn:active {
+  background: #4cae4c;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Bottom Nav */
+.nav-winmobile {
+  background: var(--win-bg);
+  height: 44px;
+  border-top: 2px solid var(--win-border-light);
+  box-shadow: inset 0 1px 0 var(--win-border-light);
+}
+.nav-winmobile-item {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--win-fg);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--win-border-dark);
+  border-left: 1px solid var(--win-border-light);
+}
+.nav-winmobile-item:first-child {
+  border-left: none;
+}
+.nav-winmobile-item:last-child {
+  border-right: none;
+}
+.nav-winmobile-item:active, .nav-winmobile-item.active {
+  background: var(--scrollbar-track);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+}
+
+/* ========================================== */
+/* 2. iOS Theme Styles (Classic Aero Glass) */
+/* ========================================== */
+
+.theme-win7 .win95-mobile-shell {
+  background: #1a2536 url('data:image/svg+xml;charset=utf-8,<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="%232c384e"/><circle cx="20" cy="20" r="1.5" fill="%231e283b" opacity="0.4"/></svg>') repeat;
+}
+
+/* Top Status Bar */
+.status-bar-ios {
+  background: linear-gradient(to bottom, #111111 0%, #333333 50%, #111111 51%, #000000 100%);
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 10px;
+  height: 20px;
+  padding: 0 6px;
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+}
+.status-bar-ios .carrier-text {
+  font-weight: bold;
+  margin-right: 4px;
+}
+.status-bar-ios .battery-icon {
+  margin-left: 2px;
+}
+
+/* Header */
+.header-ios {
+  background: linear-gradient(to bottom, #7db3e8 0%, #468ac7 50%, #1c5e9b 51%, #2468a3 100%);
+  height: 44px;
+  color: #ffffff;
+  border-bottom: 1px solid #103b66;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.header-ios h1 {
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.6);
+  flex: 1;
+  text-align: center;
+}
+.header-ios .ios-nav-btn-left,
+.header-ios .ios-nav-btn-right {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffffff;
+  border: 1px solid #103e68;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 1px 0 rgba(255,255,255,0.1);
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.4);
+}
+.header-ios .ios-nav-btn-left {
+  background: linear-gradient(to bottom, #e27575 0%, #ca3838 50%, #b21a1a 51%, #ca2b2b 100%);
+  border-color: #6e1111;
+}
+.header-ios .ios-nav-btn-left:active {
+  background: #b21a1a;
+}
+.header-ios .ios-nav-btn-right {
+  background: linear-gradient(to bottom, #609fd5 0%, #2f73b0 50%, #185289 51%, #266aa7 100%);
+}
+.header-ios .ios-nav-btn-right:active {
+  background: #185289;
+}
+
+/* Bottom Nav */
+.nav-ios {
+  background: linear-gradient(to bottom, rgba(30,30,30,0.92) 0%, rgba(5,5,5,0.96) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  height: 54px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.nav-ios-item {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.2s ease;
+}
+.nav-ios-item .nav-icon {
+  font-size: 16px;
+}
+.nav-ios-item .nav-label {
+  font-size: 10px;
+  font-weight: 500;
+}
+.nav-ios-item:active, .nav-ios-item.active {
+  color: #3897f0;
+  text-shadow: 0 0 5px rgba(56, 151, 240, 0.4);
+}
+
+/* Glassy Overrides for Cards & Layout in iOS theme */
+.theme-win7 .win95-mobile-shell .win95-match-card-win {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  color: #111111 !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px !important;
+}
+
+.theme-win7 .win95-mobile-shell .win95-match-card-title {
+  background: transparent !important;
+  color: #1c5e9b !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 11px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  padding-bottom: 5px !important;
+  margin-bottom: 8px !important;
+}
+
+.theme-win7 .win95-mobile-shell .retro-name-txt {
+  color: #111111 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+}
+.theme-win7 .win95-mobile-shell .retro-score-txt {
+  color: #111111 !important;
+}
+
+.theme-win7 .win95-mobile-shell .win95-match-score-input {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #b3cbdc !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1) !important;
+  font-family: inherit;
+  padding: 2px 4px !important;
+}
+
+.theme-win7 .win95-mobile-shell .retro-match-details {
+  border-top-color: rgba(0,0,0,0.06) !important;
+  color: #555555 !important;
+}
+
+/* iOS-style section groups (replaces clunky 3D fieldset borders) */
+.theme-win7 .win95-mobile-shell .win95-groupbox {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  padding: 12px 16px 14px !important;
+  margin: 0 0 14px 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: rgba(255,255,255,0.9) !important;
+  position: relative;
+}
+.theme-win7 .win95-mobile-shell .win95-groupbox legend {
+  /* iOS-style uppercase section label */
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.7px !important;
+  text-transform: uppercase !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  padding: 0 0 8px 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+.theme-win7 .win95-mobile-shell .win95-input-control,
+.theme-win7 .win95-mobile-shell .win95-select-control {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #b3cbdc !important;
+  border-radius: 6px !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1) !important;
+  padding: 6px 10px !important;
+}
+
+/* Glassy Tables in iOS */
+.theme-win7 .win95-mobile-shell .win95-group-box-win {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-bottom: 15px !important;
+  padding: 6px !important;
+}
+.theme-win7 .win95-mobile-shell .win95-group-card-title {
+  background: transparent !important;
+  color: #1c5e9b !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 6px;
+}
+.theme-win7 .win95-mobile-shell .table-viewport {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.theme-win7 .win95-mobile-shell .retro-table {
+  color: #111111 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.theme-win7 .win95-mobile-shell .retro-table th {
+  background: transparent !important;
+  border-bottom: 2px solid rgba(0,0,0,0.1) !important;
+  color: #555555 !important;
+  font-weight: bold;
+  font-size: 11px;
+}
+.theme-win7 .win95-mobile-shell .retro-table td {
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+  font-size: 12px;
+  padding: 6px 4px !important;
+}
+.theme-win7 .win95-mobile-shell .retro-qualifying {
+  background: rgba(46, 204, 113, 0.15) !important;
+}
+
+/* ========================================== */
+/* 3. Android Theme Styles (Material Design) */
+/* ========================================== */
+
+.theme-win10 .win95-mobile-shell {
+  background: #121212;
+  font-family: "Roboto", "Segoe UI", sans-serif;
+}
+
+/* Top Status Bar */
+.status-bar-android {
+  background: #000000;
+  color: #e3e3e3;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 10px;
+}
+.status-bar-android .notif-icon {
+  margin-right: 6px;
+  font-size: 11px;
+}
+
+/* Header */
+.header-android {
+  background: #1f1f1f;
+  height: 56px;
+  color: #ffffff;
+  border-bottom: 1px solid #2d2d2d;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.header-android h1 {
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+  text-align: left;
+}
+.header-android .android-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #ffffff;
+  cursor: pointer;
+  outline: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-android .android-action-btn:active {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Bottom Nav */
+.nav-android {
+  background: #1f1f1f;
+  height: 64px;
+  border-top: 1px solid #2d2d2d;
+}
+.nav-android-item {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #9aa0a6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.2s ease;
+}
+.nav-android-item .nav-icon {
+  font-size: 18px;
+  padding: 4px 16px;
+  border-radius: 16px;
+  transition: background-color 0.2s ease;
+}
+.nav-android-item .nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.nav-android-item.active {
+  color: #8ab4f8;
+}
+.nav-android-item.active .nav-icon {
+  background-color: rgba(138, 180, 248, 0.15);
+}
+
+/* Android Theme Cards & Overrides */
+.theme-win10 .win95-mobile-shell .win95-match-card-win {
+  background: #1e1e1e !important;
+  border: 1px solid #2d2d2d !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+  color: #e3e3e3 !important;
+  padding: 10px !important;
+}
+
+.theme-win10 .win95-mobile-shell .win95-match-card-title {
+  background: transparent !important;
+  color: #8ab4f8 !important;
+  font-size: 11px !important;
+  border-bottom: 1px solid #2d2d2d !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.theme-win10 .win95-mobile-shell .retro-name-txt {
+  color: #e3e3e3 !important;
+  font-size: 12px;
+}
+.theme-win10 .win95-mobile-shell .retro-score-txt {
+  color: #ffffff !important;
+}
+
+.theme-win10 .win95-mobile-shell .win95-match-score-input {
+  background: #2b2b2b !important;
+  color: #ffffff !important;
+  border: 1px solid #444444 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  padding: 4px !important;
+}
+.theme-win10 .win95-mobile-shell .win95-match-score-input:focus {
+  border-color: #8ab4f8 !important;
+}
+
+.theme-win10 .win95-mobile-shell .retro-match-details {
+  border-top-color: #2d2d2d !important;
+  color: #9aa0a6 !important;
+}
+
+.theme-win10 .win95-mobile-shell .win95-groupbox {
+  background: #1e1e1e !important;
+  border: 1px solid #2d2d2d !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  color: #e3e3e3 !important;
+}
+.theme-win10 .win95-mobile-shell .win95-groupbox legend {
+  color: #8ab4f8 !important;
+  font-weight: 500;
+}
+.theme-win10 .win95-mobile-shell .win95-input-control,
+.theme-win10 .win95-mobile-shell .win95-select-control {
+  background: #2b2b2b !important;
+  color: #ffffff !important;
+  border: 1px solid #444444 !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  box-shadow: none !important;
+}
+.theme-win10 .win95-mobile-shell .win95-input-control::placeholder {
+  color: #70757a;
+}
+
+/* Material Tables in Android */
+.theme-win10 .win95-mobile-shell .win95-group-box-win {
+  background: #1e1e1e !important;
+  border: 1px solid #2d2d2d !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+  margin-bottom: 16px !important;
+  padding: 10px !important;
+}
+.theme-win10 .win95-mobile-shell .win95-group-card-title {
+  background: transparent !important;
+  color: #8ab4f8 !important;
+  font-weight: bold;
+  border-bottom: 1px solid #2d2d2d !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 8px;
+}
+.theme-win10 .win95-mobile-shell .table-viewport {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.theme-win10 .win95-mobile-shell .retro-table {
+  color: #e3e3e3 !important;
+}
+.theme-win10 .win95-mobile-shell .retro-table th {
+  background: transparent !important;
+  border-bottom: 2px solid #2d2d2d !important;
+  color: #9aa0a6 !important;
+  font-size: 11px;
+}
+.theme-win10 .win95-mobile-shell .retro-table td {
+  border-bottom: 1px solid #2d2d2d !important;
+  font-size: 12px;
+  padding: 8px 6px !important;
+}
+.theme-win10 .win95-mobile-shell .retro-qualifying {
+  background: rgba(138, 180, 248, 0.08) !important;
+}
+
+/* Android custom buttons */
+.theme-win10 .win95-mobile-shell .win95-btn {
+  background: #8ab4f8 !important;
+  color: #121212 !important;
+  font-weight: 500 !important;
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  padding: 8px 16px !important;
+}
+.theme-win10 .win95-mobile-shell .win95-btn:active {
+  background: #a8c7fa !important;
+  padding: 8px 16px !important; /* overrides shift down */
+}
+
+/* ========================================== */
+/* Mobile stacking & sizing responsiveness */
+/* ========================================== */
+
 @media (max-width: 768px) {
-  .win95-desktop {
-    padding: 10px 10px 50px 10px;
+  .desktop-shell-wrapper {
+    display: none !important;
+  }
+
+  .win95-mobile-shell {
+    display: flex !important;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 15px;
-  }
-
-  .desktop-shortcuts {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+    height: 100vh;
     width: 100%;
-    margin-bottom: 10px;
+    overflow: hidden;
   }
 
-  .desktop-window {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
+  .hide-mobile {
+    display: none !important;
   }
 
-  .win95-tab-pane {
-    max-height: 450px;
+  /* Grid layout overrides for mobile phone vs tablet */
+  .win95-mobile-shell .win95-matches-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  @media (min-width: 560px) {
+    .win95-mobile-shell .win95-matches-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+  }
+
+  /* Stacking the filter controls nicely on small screens */
+  .win95-mobile-shell .win95-filters-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .win95-mobile-shell .filter-input-row,
+  .win95-mobile-shell .filter-select-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+  }
+
+  .win95-mobile-shell .filter-input-row label,
+  .win95-mobile-shell .filter-select-row label {
+    width: 60px; /* fixed label width for vertical alignment */
+    flex-shrink: 0;
+    text-align: right;
+    margin-right: 8px;
+    font-size: 11px;
+  }
+
+  .win95-mobile-shell .filter-input-row input,
+  .win95-mobile-shell .filter-select-row select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Tables adjustments on mobile screen widths */
+  .win95-mobile-shell .win95-standings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .win95-mobile-shell .retro-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .win95-mobile-shell .retro-table th, 
+  .win95-mobile-shell .retro-table td {
+    padding: 6px 4px !important;
+    font-size: 11px !important;
   }
 }
+
