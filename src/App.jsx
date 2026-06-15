@@ -365,6 +365,55 @@ function App() {
   const [customScores, setCustomScores] = useState({});
   const customScoresRef = useRef({});
 
+  // Theme selection state (Windows retro versions)
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('mundialstats-theme');
+    const validThemes = ['win95', 'winxp', 'winvista', 'win7', 'win10'];
+    return validThemes.includes(saved) ? saved : 'win95';
+  });
+
+  // Windows Menu Active Dropdown State
+  const [activeMenu, setActiveMenu] = useState(null); // null | 'archivo' | 'ver' | 'tema' | 'ayuda'
+  
+  // Show Acerca de Modal State
+  const [showAbout, setShowAbout] = useState(false);
+
+  const toggleTheme = (selectedTheme) => {
+    setTheme(selectedTheme);
+    localStorage.setItem('mundialstats-theme', selectedTheme);
+  };
+
+  const toggleMenu = (menu) => {
+    setActiveMenu(prev => prev === menu ? null : menu);
+  };
+
+  const closeMenu = () => {
+    setActiveMenu(null);
+  };
+
+  const handleSalir = () => {
+    // Reset custom simulation scores and all filter fields
+    setCustomScores({});
+    customScoresRef.current = {};
+    setSearchQuery('');
+    setStageFilter('all');
+    setStatusFilter('all');
+    setActiveTab('matches');
+    fetchData(); // reload fresh copy
+    alert("Se ha reiniciado el software MundialStats a su estado original.");
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.win95-menu-item-wrapper')) {
+        setActiveMenu(null);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
+
   const handleScoreChange = (matchId, team, newScore) => {
     const currentCustom = customScoresRef.current;
     const newCustomScores = {
@@ -546,319 +595,439 @@ function App() {
   const hasLiveMatches = matches.some(m => m.status === 'in_progress');
 
   return (
-    <>
-      {hasLiveMatches && (
-        <div className="live-warning-banner">
-          <div className="live-warning-content">
-            <span className="live-warning-icon">⚡</span>
-            <span>
-              <strong>Partidos en vivo en progreso:</strong> Por limitaciones de recursos, los resultados no se actualizan automáticamente en tiempo real. Puedes <strong>modificar los marcadores directamente</strong> en las tarjetas para proyectar cómo iría la tabla de posiciones.
-            </span>
-          </div>
-        </div>
-      )}
-      <header>
-        <div className="brand">
-          <span className="brand-icon">🏆</span>
-          <h1>MundialStats 2026</h1>
-        </div>
-        <p>Resultados, marcadores en vivo, fixtures y tablas de posiciones del Mundial 2026 (Canadá, EE. UU. y México). <strong>Horarios en hora de Ecuador (UTC-5)</strong>.</p>
-      </header>
-
-      {/* Connection status banner */}
-      <div className="status-banner">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {isFallback ? (
-            <div className="status-badge fallback">
-              <AlertCircle size={16} />
-              <span>Caché / Datos locales</span>
-            </div>
-          ) : (
-            <div className="status-badge live">
-              <CheckCircle2 size={16} />
-              <span>Conectado a API en vivo</span>
-            </div>
-          )}
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            {isFallback 
-              ? 'Se cargaron datos en caché/locales por falta de conexión o caída de la API.' 
-              : 'Actualizado con datos del servidor en vivo.'}
-          </span>
-        </div>
+    <div className={`win95-app-container theme-${theme}`}>
+      {/* Desktop Environment */}
+      <div className="win95-desktop">
         
-        <button 
-          className="refresh-btn" 
-          onClick={fetchData} 
-          disabled={isRefreshing}
-          title="Actualizar datos desde el servidor"
-        >
-          <RefreshCw size={14} className={isRefreshing ? 'spinner' : ''} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
-          <span>{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
-        </button>
-      </div>
+        {/* Main Application Window */}
+        <div className="win95-window main-window">
+          {/* Title Bar */}
+          <div className="win95-title-bar">
+            <div className="win95-title-text">
+              <span className="win95-title-icon">🏆</span>
+              <span>MundialStats 2026 - Control de Resultados</span>
+            </div>
+            <div className="win95-title-buttons">
+              <button className="win95-title-btn" title="Minimizar">_</button>
+              <button className="win95-title-btn" title="Maximizar">⬜</button>
+              <button className="win95-title-btn close" title="Cerrar">X</button>
+            </div>
+          </div>
 
-      {/* Navigation tabs */}
-      <div className="tabs-container">
-        <div className="tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'matches' ? 'active' : ''}`}
-            onClick={() => setActiveTab('matches')}
-          >
-            <CalendarDays size={16} />
-            <span>Partidos ({matches.length})</span>
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'standings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('standings')}
-          >
-            <TableProperties size={16} />
-            <span>Posiciones (Grupos A-L)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      {loading ? (
-        <div className="spinner-wrapper">
-          <div className="spinner"></div>
-          <p style={{ color: 'var(--text-secondary)' }}>Cargando datos del Mundial 2026...</p>
-        </div>
-      ) : (
-        <>
-          {activeTab === 'matches' ? (
-            <div className="matches-view-container">
-              {/* Search & Filters */}
-              <div className="controls">
-                <div className="search-wrapper">
-                  <Search size={18} className="search-icon" />
-                  <input 
-                    type="text" 
-                    placeholder="Buscar país, estadio, ciudad o grupo..." 
-                    className="input-control"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
-                <div className="filters-wrapper">
-                  <div className="filter-wrapper" style={{ flex: 1 }}>
-                    <select 
-                      className="input-control" 
-                      style={{ paddingLeft: '16px' }}
-                      value={stageFilter}
-                      onChange={(e) => setStageFilter(e.target.value)}
-                    >
-                      <option value="all">Todas las Fases</option>
-                      <option value="group">Fase de Grupos</option>
-                      <option value="knockout">Fase Eliminatoria</option>
-                    </select>
-                  </div>
-                  
-                  <div className="filter-wrapper" style={{ flex: 1 }}>
-                    <select 
-                      className="input-control" 
-                      style={{ paddingLeft: '16px' }}
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <option value="all">Todos los Estados</option>
-                      <option value="completed">Finalizados</option>
-                      <option value="live">En Vivo</option>
-                      <option value="scheduled">Programados</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Matches List */}
-              {filteredMatches.length === 0 ? (
-                <div className="empty-state">
-                  <span className="empty-state-icon">⚽</span>
-                  <h3>No se encontraron partidos</h3>
-                  <p>Intenta ajustar la búsqueda o los filtros aplicados.</p>
-                </div>
-              ) : (
-                <div className="matches-list">
-                  {filteredMatches.map((match) => {
-                    const homeTeamName = match.home_team?.name || 'Por definir';
-                    const awayTeamName = match.away_team?.name || 'Por definir';
-                    const homeTeamCode = match.home_team_country || '';
-                    const awayTeamCode = match.away_team_country || '';
-                    
-                    const homeTeamEs = getCountryNameEs(homeTeamCode, homeTeamName);
-                    const awayTeamEs = getCountryNameEs(awayTeamCode, awayTeamName);
-                    const homeFlag = getCountryFlagUrl(homeTeamCode, homeTeamName);
-                    const awayFlag = getCountryFlagUrl(awayTeamCode, awayTeamName);
-
-                    const isHomeWinner = match.status === 'completed' && match.winner_code === homeTeamCode;
-                    const isAwayWinner = match.status === 'completed' && match.winner_code === awayTeamCode;
-                    
-                    let statusLabel = 'Programado';
-                    let statusClass = 'scheduled';
-                    if (match.status === 'completed') {
-                      statusLabel = 'Finalizado';
-                      statusClass = 'completed';
-                    } else if (match.status === 'in_progress') {
-                      statusLabel = 'En Vivo';
-                      statusClass = 'live';
-                    }
-
-                    return (
-                      <div key={match.id} className={`match-card ${statusClass}`}>
-                        <div>
-                          <div className="match-meta">
-                            <span className="match-stage">{getStageNameEs(match.stage_name)}</span>
-                            <span className={`match-status ${statusClass}`}>{statusLabel}</span>
-                          </div>
-                          
-                          <div className="match-teams">
-                            {/* Home Team */}
-                            <div className="match-team-row">
-                              <div className="match-team-info">
-                                <img src={homeFlag} alt={homeTeamEs} className="match-team-flag" />
-                                <span className={`match-team-name ${isHomeWinner ? 'winner' : match.status === 'completed' ? 'loser' : ''}`}>
-                                  {homeTeamEs}
-                                </span>
-                              </div>
-                              {match.status === 'in_progress' ? (
-                                <input 
-                                  type="number" 
-                                  min="0"
-                                  className="match-score-input"
-                                  value={match.home_team.goals}
-                                  onChange={(e) => handleScoreChange(match.id, 'home', parseInt(e.target.value) || 0)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              ) : (
-                                <span className={`match-team-score ${isHomeWinner ? 'winner' : match.status === 'completed' ? 'loser' : ''}`}>
-                                  {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.home_team.goals : '-'}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Away Team */}
-                            <div className="match-team-row">
-                              <div className="match-team-info">
-                                <img src={awayFlag} alt={awayTeamEs} className="match-team-flag" />
-                                <span className={`match-team-name ${isAwayWinner ? 'winner' : match.status === 'completed' ? 'loser' : ''}`}>
-                                  {awayTeamEs}
-                                </span>
-                              </div>
-                              {match.status === 'in_progress' ? (
-                                <input 
-                                  type="number" 
-                                  min="0"
-                                  className="match-score-input"
-                                  value={match.away_team.goals}
-                                  onChange={(e) => handleScoreChange(match.id, 'away', parseInt(e.target.value) || 0)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              ) : (
-                                <span className={`match-team-score ${isAwayWinner ? 'winner' : match.status === 'completed' ? 'loser' : ''}`}>
-                                  {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.away_team.goals : '-'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Penalties shootout */}
-                        {match.status === 'completed' && (match.home_team.penalties > 0 || match.away_team.penalties > 0) ? (
-                          <div className="match-penalties">
-                            Penaltis: {match.home_team.penalties} - {match.away_team.penalties}
-                          </div>
-                        ) : null}
-
-                        <div className="match-details">
-                          <div className="match-venue" title="Estadio y País">
-                            <MapPin size={12} />
-                            <span>{match.venue}, {match.location}</span>
-                          </div>
-                          <div className="match-date" title="Fecha y hora local">
-                            <Calendar size={12} />
-                            <span>{formatMatchDate(match.datetime)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+          {/* Menu Bar */}
+          <div className="win95-menu-bar">
+            <div className="win95-menu-item-wrapper">
+              <button className={`win95-menu-btn ${activeMenu === 'archivo' ? 'active' : ''}`} onClick={() => toggleMenu('archivo')}>
+                <u>A</u>rchivo
+              </button>
+              {activeMenu === 'archivo' && (
+                <div className="win95-dropdown-menu">
+                  <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
+                    <u>S</u>alir (Reiniciar)
+                  </button>
                 </div>
               )}
             </div>
-          ) : (
-            /* Standings View */
-            <div className="groups-grid">
-              {groups.map((group) => (
-                <div key={group.letter} className="group-card">
-                  <div className="group-header">
-                    <span>Grupo {group.letter}</span>
-                  </div>
-                  
-                  <div className="table-wrapper">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th className="text-center" style={{ width: '40px' }}>POS</th>
-                          <th>Equipo</th>
-                          <th className="text-center" title="Partidos Jugados">PJ</th>
-                          <th className="text-center" title="Victorias">G</th>
-                          <th className="text-center" title="Empates">E</th>
-                          <th className="text-center" title="Derrotas">P</th>
-                          <th className="text-center hide-mobile" title="Goles a Favor">GF</th>
-                          <th className="text-center hide-mobile" title="Goles en Contra">GC</th>
-                          <th className="text-center" title="Diferencia de Goles">DG</th>
-                          <th className="text-center text-bold">PTS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.teams.map((team, idx) => {
-                          const isQualifying = idx < 2; // Top 2 advance
-                          const teamEs = getCountryNameEs(team.country, team.name);
-                          const flagUrl = getCountryFlagUrl(team.country, team.name);
 
-                          return (
-                            <tr key={team.country} className={isQualifying ? 'qualifying' : ''}>
-                              <td className="text-center text-bold" style={{ color: isQualifying ? 'var(--accent-gold)' : 'var(--text-secondary)' }}>
-                                {idx + 1}
-                              </td>
-                              <td>
-                                <div className="team-cell">
-                                  <img src={flagUrl} alt={teamEs} className="team-flag" />
-                                  <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }} title={teamEs}>
-                                    {teamEs}
-                                  </span>
+            <div className="win95-menu-item-wrapper">
+              <button className={`win95-menu-btn ${activeMenu === 'ver' ? 'active' : ''}`} onClick={() => toggleMenu('ver')}>
+                <u>V</u>er
+              </button>
+              {activeMenu === 'ver' && (
+                <div className="win95-dropdown-menu">
+                  <button className={`win95-dropdown-item ${activeTab === 'matches' ? 'checked' : ''}`} onClick={() => { setActiveTab('matches'); closeMenu(); }}>
+                    {activeTab === 'matches' && '✓ '}<u>P</u>artidos
+                  </button>
+                  <button className={`win95-dropdown-item ${activeTab === 'standings' ? 'checked' : ''}`} onClick={() => { setActiveTab('standings'); closeMenu(); }}>
+                    {activeTab === 'standings' && '✓ '}Tablas de <u>P</u>osiciones
+                  </button>
+                  <div className="win95-dropdown-separator"></div>
+                  <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
+                    <u>A</u>ctualizar datos (Fetch)
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="win95-menu-item-wrapper">
+              <button className={`win95-menu-btn ${activeMenu === 'tema' ? 'active' : ''}`} onClick={() => toggleMenu('tema')}>
+                <u>T</u>ema
+              </button>
+              {activeMenu === 'tema' && (
+                <div className="win95-dropdown-menu">
+                  <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
+                    {theme === 'win95' && '✓ '}Windows 95 / 98
+                  </button>
+                  <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
+                    {theme === 'winxp' && '✓ '}Windows XP (Luna)
+                  </button>
+                  <button className={`win95-dropdown-item ${theme === 'winvista' ? 'checked' : ''}`} onClick={() => { toggleTheme('winvista'); closeMenu(); }}>
+                    {theme === 'winvista' && '✓ '}Windows Vista
+                  </button>
+                  <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
+                    {theme === 'win7' && '✓ '}Windows 7 (Aero)
+                  </button>
+                  <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
+                    {theme === 'win10' && '✓ '}Windows 10
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="win95-menu-item-wrapper">
+              <button className={`win95-menu-btn ${activeMenu === 'ayuda' ? 'active' : ''}`} onClick={() => toggleMenu('ayuda')}>
+                A<u>y</u>uda
+              </button>
+              {activeMenu === 'ayuda' && (
+                <div className="win95-dropdown-menu">
+                  <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
+                    <u>A</u>cerca de MundialStats...
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Window Body Container */}
+          <div className="win95-window-body">
+            
+            {/* Status info bar */}
+            <div className="win95-toolbar">
+              <div className="win95-status-field field-badge">
+                {isFallback ? (
+                  <span className="retro-badge fallback">⚠️ SIN CONEXIÓN</span>
+                ) : (
+                  <span className="retro-badge live">🖧 CONECTADO</span>
+                )}
+              </div>
+              <div className="win95-status-field field-text">
+                {isFallback 
+                  ? 'Se cargaron datos locales por falta de conexión o caída de la API.' 
+                  : 'Conectado a la API en vivo. Datos actualizados.'}
+              </div>
+              <button className="win95-btn toolbar-btn" onClick={fetchData} disabled={isRefreshing}>
+                <RefreshCw size={12} className={isRefreshing ? 'spinner' : ''} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+                <span>{isRefreshing ? 'Cargando...' : 'Reintentar'}</span>
+              </button>
+            </div>
+
+            {/* Live Matches Warn inside the App container */}
+            {hasLiveMatches && (
+              <div className="win95-banner-warning">
+                <span className="warning-icon">⚡</span>
+                <div className="warning-text">
+                  <strong>¡Atención! Partidos en Vivo:</strong> Por limitaciones, los resultados en vivo no se actualizan solos. Puedes hacer clic en los marcadores de los partidos en vivo para cambiarlos y simular la tabla.
+                </div>
+              </div>
+            )}
+
+            {/* Tab Navigation (Folder style) */}
+            <div className="win95-tabs">
+              <button 
+                className={`win95-tab-header ${activeTab === 'matches' ? 'active' : ''}`}
+                onClick={() => setActiveTab('matches')}
+              >
+                Partidos ({matches.length})
+              </button>
+              <button 
+                className={`win95-tab-header ${activeTab === 'standings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('standings')}
+              >
+                Tabla de Posiciones
+              </button>
+            </div>
+
+            {/* Tab Pane Body */}
+            <div className="win95-tab-pane">
+              {loading ? (
+                <div className="win95-loading-wrapper">
+                  <div className="win95-hourglass">⌛</div>
+                  <p>Cargando base de datos del Mundial 2026...</p>
+                </div>
+              ) : (
+                <>
+                  {activeTab === 'matches' ? (
+                    <div className="win95-view-content">
+                      {/* Search & Filters */}
+                      <fieldset className="win95-groupbox filter-groupbox">
+                        <legend>Buscar y Filtrar Partidos</legend>
+                        <div className="win95-filters-grid">
+                          <div className="filter-input-row">
+                            <label htmlFor="search-input">Texto:</label>
+                            <input 
+                              id="search-input"
+                              type="text" 
+                              placeholder="Buscar país, estadio, ciudad..." 
+                              className="win95-input-control"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                          </div>
+                          <div className="filter-select-row">
+                            <label htmlFor="stage-filter">Fase:</label>
+                            <select 
+                              id="stage-filter"
+                              className="win95-select-control"
+                              value={stageFilter}
+                              onChange={(e) => setStageFilter(e.target.value)}
+                            >
+                              <option value="all">Todas las Fases</option>
+                              <option value="group">Fase de Grupos</option>
+                              <option value="knockout">Fase Eliminatoria</option>
+                            </select>
+                          </div>
+                          <div className="filter-select-row">
+                            <label htmlFor="status-filter">Estado:</label>
+                            <select 
+                              id="status-filter"
+                              className="win95-select-control"
+                              value={statusFilter}
+                              onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                              <option value="all">Todos los Estados</option>
+                              <option value="completed">Finalizados</option>
+                              <option value="live">En Vivo</option>
+                              <option value="scheduled">Programados</option>
+                            </select>
+                          </div>
+                        </div>
+                      </fieldset>
+
+                      {/* Matches Cards */}
+                      {filteredMatches.length === 0 ? (
+                        <div className="win95-sunken empty-state-retro">
+                          <span className="empty-state-icon">⚽</span>
+                          <h3>No se encontraron registros</h3>
+                          <p>Verifique los criterios de búsqueda o cambie los filtros seleccionados.</p>
+                        </div>
+                      ) : (
+                        <div className="win95-matches-grid">
+                          {filteredMatches.map((match) => {
+                            const homeTeamName = match.home_team?.name || 'Por definir';
+                            const awayTeamName = match.away_team?.name || 'Por definir';
+                            const homeTeamCode = match.home_team_country || '';
+                            const awayTeamCode = match.away_team_country || '';
+                            
+                            const homeTeamEs = getCountryNameEs(homeTeamCode, homeTeamName);
+                            const awayTeamEs = getCountryNameEs(awayTeamCode, awayTeamName);
+                            const homeFlag = getCountryFlagUrl(homeTeamCode, homeTeamName);
+                            const awayFlag = getCountryFlagUrl(awayTeamCode, awayTeamName);
+
+                            const isHomeWinner = match.status === 'completed' && match.winner_code === homeTeamCode;
+                            const isAwayWinner = match.status === 'completed' && match.winner_code === awayTeamCode;
+                            
+                            let statusLabel = 'Programado';
+                            let statusClass = 'scheduled';
+                            if (match.status === 'completed') {
+                              statusLabel = 'Finalizado';
+                              statusClass = 'completed';
+                            } else if (match.status === 'in_progress') {
+                              statusLabel = 'En Vivo';
+                              statusClass = 'live';
+                            }
+
+                            return (
+                              <div key={match.id} className={`win95-match-card-win ${statusClass}`}>
+                                <div className="win95-match-card-title">
+                                  <span>Match #{match.id} - {getStageNameEs(match.stage_name)}</span>
+                                  <span className={`match-badge-retro ${statusClass}`}>{statusLabel}</span>
                                 </div>
-                              </td>
-                              <td className="text-center">{team.games_played}</td>
-                              <td className="text-center">{team.wins}</td>
-                              <td className="text-center">{team.draws}</td>
-                              <td className="text-center">{team.losses}</td>
-                              <td className="text-center hide-mobile">{team.goals_for}</td>
-                              <td className="text-center hide-mobile">{team.goals_against}</td>
-                              <td className="text-center" style={{ color: team.goal_differential > 0 ? 'var(--color-win)' : team.goal_differential < 0 ? 'var(--color-loss)' : 'inherit' }}>
-                                {team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}
-                              </td>
-                              <td className="text-center text-bold">{team.group_points}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                <div className="win95-match-card-body">
+                                  <div className="retro-team-rows">
+                                    {/* Home Team */}
+                                    <div className="retro-team-row">
+                                      <div className="retro-team-name-flag">
+                                        <img src={homeFlag} alt={homeTeamEs} className="retro-flag" />
+                                        <span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
+                                          {homeTeamEs}
+                                        </span>
+                                      </div>
+                                      {match.status === 'in_progress' ? (
+                                        <input 
+                                          type="number" 
+                                          min="0"
+                                          className="win95-match-score-input"
+                                          value={match.home_team.goals}
+                                          onChange={(e) => handleScoreChange(match.id, 'home', parseInt(e.target.value) || 0)}
+                                        />
+                                      ) : (
+                                        <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
+                                          {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.home_team.goals : '-'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Away Team */}
+                                    <div className="retro-team-row">
+                                      <div className="retro-team-name-flag">
+                                        <img src={awayFlag} alt={awayTeamEs} className="retro-flag" />
+                                        <span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
+                                          {awayTeamEs}
+                                        </span>
+                                      </div>
+                                      {match.status === 'in_progress' ? (
+                                        <input 
+                                          type="number" 
+                                          min="0"
+                                          className="win95-match-score-input"
+                                          value={match.away_team.goals}
+                                          onChange={(e) => handleScoreChange(match.id, 'away', parseInt(e.target.value) || 0)}
+                                        />
+                                      ) : (
+                                        <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
+                                          {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.away_team.goals : '-'}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {match.status === 'completed' && (match.home_team.penalties > 0 || match.away_team.penalties > 0) ? (
+                                    <div className="retro-match-penalties">
+                                      Penaltis: {match.home_team.penalties} - {match.away_team.penalties}
+                                    </div>
+                                  ) : null}
+
+                                  <div className="retro-match-details">
+                                    <div className="retro-detail-line">
+                                      <span className="icon">📍</span>
+                                      <span>{match.venue}, {match.location}</span>
+                                    </div>
+                                    <div className="retro-detail-line">
+                                      <span className="icon">📅</span>
+                                      <span>{formatMatchDate(match.datetime)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Standings View */
+                    <div className="win95-standings-grid">
+                      {groups.map((group) => (
+                        <div key={group.letter} className="win95-group-box-win">
+                          <div className="win95-group-card-title">
+                            <span>Grupo {group.letter}</span>
+                          </div>
+                          <div className="win95-sunken table-viewport">
+                            <table className="retro-table">
+                              <thead>
+                                <tr>
+                                  <th style={{ width: '30px' }}>POS</th>
+                                  <th>Equipo</th>
+                                  <th className="text-center">PJ</th>
+                                  <th className="text-center">G</th>
+                                  <th className="text-center">E</th>
+                                  <th className="text-center">P</th>
+                                  <th className="text-center hide-mobile">GF</th>
+                                  <th className="text-center hide-mobile">GC</th>
+                                  <th className="text-center">DG</th>
+                                  <th className="text-center text-bold">PTS</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {group.teams.map((team, idx) => {
+                                  const isQualifying = idx < 2;
+                                  const teamEs = getCountryNameEs(team.country, team.name);
+                                  const flagUrl = getCountryFlagUrl(team.country, team.name);
+
+                                  return (
+                                    <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
+                                      <td className="text-center text-bold idx-cell">
+                                        {idx + 1}
+                                      </td>
+                                      <td>
+                                        <div className="retro-table-team">
+                                          <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
+                                          <span className="retro-table-team-name" title={teamEs}>
+                                            {teamEs}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td className="text-center">{team.games_played}</td>
+                                      <td className="text-center">{team.wins}</td>
+                                      <td className="text-center">{team.draws}</td>
+                                      <td className="text-center">{team.losses}</td>
+                                      <td className="text-center hide-mobile">{team.goals_for}</td>
+                                      <td className="text-center hide-mobile">{team.goals_against}</td>
+                                      <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>
+                                        {team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}
+                                      </td>
+                                      <td className="text-center text-bold pts-cell">{team.group_points}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Windows Status Bar */}
+          <div className="win95-status-bar">
+            <div className="status-bar-pane pane-desc">
+              Sistema Operativo: {
+                theme === 'win95' ? 'Windows 95' :
+                theme === 'winxp' ? 'Windows XP' :
+                theme === 'winvista' ? 'Windows Vista' :
+                theme === 'win7' ? 'Windows 7' :
+                theme === 'win10' ? 'Windows 10' : 'Windows'
+              }
+            </div>
+            <div className="status-bar-pane pane-loaded">
+              Partidos: {matches.length} cargados
+            </div>
+            <div className="status-bar-pane pane-time">
+              Mundial 2026
+            </div>
+          </div>
+        </div>
+
+
+        {/* About Dialog (Acerca de) Modal */}
+        {showAbout && (
+          <div className="win95-modal-overlay">
+            <div className="win95-window win95-dialog about-dialog">
+              <div className="win95-title-bar">
+                <div className="win95-title-text">
+                  <span>Acerca de MundialStats</span>
+                </div>
+                <div className="win95-title-buttons">
+                  <button className="win95-title-btn close" onClick={() => setShowAbout(false)}>X</button>
+                </div>
+              </div>
+              <div className="win95-dialog-body">
+                <div className="about-main-info">
+                  <div className="about-system-icon">🏆</div>
+                  <div className="about-text-content">
+                    <h2>MundialStats 2026</h2>
+                    <p>Versión 1.0 (Build 9500)</p>
+                    <p>Derechos reservados © 2026 Antigravity Co.</p>
+                    <p className="license-text">Este programa está licenciado para el uso interactivo de simulación de la Copa del Mundo 2026.</p>
                   </div>
                 </div>
-              ))}
+                <div className="win95-sunken about-description-box">
+                  Este software realiza solicitudes HTTP directas a una base de datos pública de fútbol en GitHub (openfootball/worldcup.json) para obtener los resultados programados del Mundial 2026. Permite modificar interactivamente los marcadores de los partidos en vivo para actualizar instantáneamente las tablas de posiciones de los Grupos A al L.
+                </div>
+                <div className="about-btn-row">
+                  <button className="win95-btn default-btn" onClick={() => setShowAbout(false)}>Aceptar</button>
+                </div>
+              </div>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
 
-      <footer>
-        <p>MundialStats &copy; {new Date().getFullYear()} - Creado con React y API Pública de Fútbol.</p>
-        <p style={{ marginTop: '4px', fontSize: '0.75rem', opacity: 0.7 }}>
-          Calendarios y fixtures obtenidos vía <a href="https://github.com/rezarahiminia/worldcup2026" target="_blank" rel="noopener noreferrer">rezarahiminia/worldcup2026</a>.
-        </p>
-      </footer>
-    </>
+      </div>
+    </div>
   );
 }
 

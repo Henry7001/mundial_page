@@ -1,46 +1,191 @@
-/* Premium Design System for MundialStats */
+/* Retro Windows Themes variables for MundialStats */
 
-:root {
-  /* Colors */
-  --bg-main: #060913;
-  --bg-card: rgba(15, 23, 42, 0.65);
-  --bg-card-hover: rgba(30, 41, 59, 0.8);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-color-hover: rgba(255, 255, 255, 0.18);
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  /* Brand Accents */
-  --accent-gold: #f59e0b;
-  --accent-gold-glow: rgba(245, 158, 11, 0.15);
-  --accent-gold-dark: #b45309;
-  
-  /* Status Colors */
-  --color-win: #10b981;
-  --color-win-bg: rgba(16, 185, 129, 0.12);
-  --color-draw: #64748b;
-  --color-draw-bg: rgba(100, 116, 139, 0.12);
-  --color-loss: #ef4444;
-  --color-loss-bg: rgba(239, 68, 68, 0.12);
-  --color-live: #ef4444;
-  --color-completed: #10b981;
-  --color-scheduled: #3b82f6;
+.theme-win95 {
+  /* Desktop Background */
+  --desktop-bg: #008080; /* Classic Teal */
 
-  /* Typography */
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Panels & Windows Colors */
+  --win-bg: #c0c0c0; /* Standard Win95 gray */
+  --win-fg: #000000;
+  --win-border-light: #ffffff;
+  --win-border-dark: #808080;
+  --win-border-darkest: #000000;
 
-  /* Animation & Borders */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.07);
+  /* Title Bars */
+  --title-bg-start: #000080; /* Classic Dark Navy */
+  --title-bg-end: #1084d0;
+  --title-text: #ffffff;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #c0c0c0;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #cc0000;
+  --color-live-bg: #ffffd0;
+  --color-completed-text: #006600;
+  --color-win-text: #008000;
+  --color-loss-text: #cc0000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #c0c0c0;
+  --scrollbar-track: #dfdfdf;
+  --scrollbar-thumb: #c0c0c0;
 }
 
+.theme-winxp {
+  /* Windows XP Royal Blue / Luna Theme */
+  --desktop-bg: #245dd7; /* XP Blue Screen background */
+
+  /* Panels & Windows Colors */
+  --win-bg: #ece9d8; /* Standard XP sand color */
+  --win-fg: #000000;
+  --win-border-light: #ffffff;
+  --win-border-dark: #aca899;
+  --win-border-darkest: #716f64;
+
+  /* Title Bars */
+  --title-bg-start: #0054e3; /* Classic XP Royal Blue */
+  --title-bg-end: #3a8bf5;
+  --title-text: #ffffff;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #e5e2d0;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #d00000;
+  --color-live-bg: #fdf5e6;
+  --color-completed-text: #007000;
+  --color-win-text: #007000;
+  --color-loss-text: #d00000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #e2decb;
+  --scrollbar-track: #f1efe2;
+  --scrollbar-thumb: #c7c2ab;
+}
+
+.theme-winvista {
+  /* Windows Vista Aero Theme */
+  --desktop-bg: #11253d; /* Vista Dark Aurora Blue */
+
+  /* Panels & Windows Colors */
+  --win-bg: rgba(35, 35, 35, 0.85); /* Aero Dark Glass */
+  --win-fg: #ffffff;
+  --win-border-light: rgba(255, 255, 255, 0.25);
+  --win-border-dark: rgba(0, 0, 0, 0.45);
+  --win-border-darkest: #000000;
+
+  /* Title Bars */
+  --title-bg-start: rgba(10, 10, 10, 0.9);
+  --title-bg-end: rgba(45, 45, 45, 0.9);
+  --title-text: #ffffff;
+
+  /* Inputs & Textbox */
+  --input-bg: #121212;
+  --input-fg: #ffffff;
+
+  /* Buttons */
+  --btn-bg: rgba(60, 60, 60, 0.85);
+  --btn-fg: #ffffff;
+
+  /* Custom Status Badges */
+  --color-live-text: #ff6b6b;
+  --color-live-bg: rgba(239, 68, 68, 0.15);
+  --color-completed-text: #4ade80;
+  --color-win-text: #4ade80;
+  --color-loss-text: #ff6b6b;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #2b2b2b;
+  --scrollbar-track: #1c1c1c;
+  --scrollbar-thumb: #4e4e4e;
+}
+
+.theme-win7 {
+  /* Windows 7 Aero glass Theme */
+  --desktop-bg: #287fc2; /* Windows 7 Sky Blue */
+
+  /* Panels & Windows Colors */
+  --win-bg: rgba(238, 246, 253, 0.82); /* Aero Translucent Glass Panel */
+  --win-fg: #000000;
+  --win-border-light: rgba(255, 255, 255, 0.65);
+  --win-border-dark: rgba(120, 160, 195, 0.5);
+  --win-border-darkest: #555555;
+
+  /* Title Bars */
+  --title-bg-start: rgba(185, 215, 245, 0.7); /* Sky Glass effect */
+  --title-bg-end: rgba(125, 185, 225, 0.7);
+  --title-text: #000000;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #f2f2f2;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #cc0000;
+  --color-live-bg: #ffffd0;
+  --color-completed-text: #006600;
+  --color-win-text: #008000;
+  --color-loss-text: #cc0000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #e1edf7;
+  --scrollbar-track: #e2ecf5;
+  --scrollbar-thumb: #a6bed3;
+}
+
+.theme-win10 {
+  /* Windows 10 Modern/Flat Theme */
+  --desktop-bg: #0078d7; /* Win10 Default Blue */
+
+  /* Panels & Windows Colors */
+  --win-bg: #f3f3f3; /* Windows 10 Light Gray */
+  --win-fg: #000000;
+  --win-border-light: #e5e5e5;
+  --win-border-dark: #d3d3d3;
+  --win-border-darkest: #888888;
+
+  /* Title Bars */
+  --title-bg-start: #ffffff; /* Win10 Classic White title bar */
+  --title-bg-end: #ffffff;
+  --title-text: #333333;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #cccccc;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #e81123;
+  --color-live-bg: #fde7e9;
+  --color-completed-text: #107c41;
+  --color-win-text: #107c41;
+  --color-loss-text: #e81123;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #f3f3f3;
+  --scrollbar-track: #f0f0f0;
+  --scrollbar-thumb: #cdcdcd;
+}
+
+/* Global Reset & Base Style */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -48,338 +193,756 @@
 }
 
 body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  font-family: "MS Sans Serif", Tahoma, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container Structure */
+.win95-app-container {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--desktop-bg);
+}
+
+.win95-desktop {
+  flex: 1;
+  padding: 0;
   position: relative;
-  overflow-x: hidden;
-  line-height: 1.5;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
 }
 
-/* Background Glowing Orbs */
-body::before,
-body::after {
-  content: '';
-  position: absolute;
-  width: 45vw;
-  height: 45vw;
-  border-radius: 50%;
-  z-index: -1;
-  pointer-events: none;
-  filter: blur(120px);
-  opacity: 0.15;
-}
-
-body::before {
-  background: radial-gradient(circle, var(--accent-gold) 0%, transparent 70%);
-  top: -10vw;
-  right: -10vw;
-}
-
-body::after {
-  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
-  bottom: -10vw;
-  left: -10vw;
-}
-
-/* Layout Wrapper */
-#root {
+/* Main Application Window */
+.win95-window {
+  background: var(--win-bg);
+  color: var(--win-fg);
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 24px;
+  max-width: 100%;
   min-height: 100vh;
+  height: 100vh;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* 3D Borders helpers */
+.win95-raised {
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+}
+
+.win95-sunken {
+  border-top: 2px solid var(--win-border-dark);
+  border-left: 2px solid var(--win-border-dark);
+  border-right: 2px solid var(--win-border-light);
+  border-bottom: 2px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest),
+              inset -1px -1px 0 var(--win-bg);
+}
+
+/* Title Bar */
+.win95-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, var(--title-bg-start), var(--title-bg-end));
+  color: var(--title-text);
+  padding: 3px 4px;
+  font-weight: bold;
+  font-size: 12px;
+  user-select: none;
+}
+
+.win95-title-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.win95-title-icon {
+  font-size: 14px;
+}
+
+.win95-title-buttons {
+  display: flex;
+}
+
+.win95-title-btn {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-light),
+              inset -0.8px -0.8px 0 var(--win-border-dark);
+  width: 16px;
+  height: 14px;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 11px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  margin-left: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win95-title-btn:active {
+  border-top: 1.5px solid var(--win-border-darkest);
+  border-left: 1.5px solid var(--win-border-darkest);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-dark),
+              inset -0.8px -0.8px 0 var(--win-bg);
+}
+
+/* Menu Bar */
+.win95-menu-bar {
+  display: flex;
+  background: var(--win-bg);
+  border-bottom: 1px solid var(--win-border-dark);
+  padding: 2px 4px;
+  gap: 2px;
+  font-size: 11px;
+  z-index: 100;
+  user-select: none;
+}
+
+.win95-menu-item-wrapper {
+  position: relative;
+}
+
+.win95-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--win-fg);
+  padding: 3px 8px;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+}
+
+.win95-menu-btn:hover, .win95-menu-btn.active {
+  background: var(--title-bg-start);
+  color: var(--title-text);
+}
+
+/* Dropdown Menu styling */
+.win95-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--win-bg);
+  color: var(--win-fg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  min-width: 170px;
+  padding: 2px;
+  z-index: 500;
   display: flex;
   flex-direction: column;
 }
 
-/* Header styling */
-header {
-  margin-bottom: 40px;
-  text-align: center;
-  position: relative;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.brand-icon {
-  font-size: 2.5rem;
-  animation: float 4s ease-in-out infinite;
-}
-
-h1 {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 2.5rem;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #ffffff 30%, var(--accent-gold) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-header p {
-  color: var(--text-secondary);
-  font-size: 1.05rem;
-  max-width: 600px;
-  margin: 8px auto 0;
-  font-weight: 400;
-}
-
-/* Navigation Tabs */
-.tabs-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 32px;
-}
-
-.tabs {
-  background: rgba(15, 23, 42, 0.8);
-  border: var(--glass-border);
-  padding: 6px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  gap: 4px;
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
-}
-
-.tab-btn {
+.win95-dropdown-item {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  padding: 10px 24px;
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 14px;
+  color: var(--win-fg);
+  text-align: left;
+  padding: 5px 12px 5px 20px;
+  font-family: inherit;
+  font-size: 11px;
   cursor: pointer;
+  outline: none;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.win95-dropdown-item:hover {
+  background: var(--title-bg-start);
+  color: var(--title-text);
+}
+
+.win95-dropdown-separator {
+  height: 1px;
+  background: var(--win-border-dark);
+  border-bottom: 1px solid var(--win-border-light);
+  margin: 3px 1px;
+}
+
+/* Toolbar & status fields */
+.win95-window-body {
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.win95-toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: var(--transition-smooth);
+  background: var(--win-bg);
+  padding: 4px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--win-border-dark);
+  flex-wrap: wrap;
 }
 
-.tab-btn:hover {
-  color: var(--text-primary);
-}
-
-.tab-btn.active {
-  background: var(--accent-gold);
-  color: #000000;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
-}
-
-/* Status Bar & Alert Banner */
-.status-banner {
-  background: rgba(30, 41, 59, 0.5);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 12px 18px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  backdrop-filter: blur(6px);
-  gap: 12px;
-}
-
-.status-badge {
+.win95-status-field {
+  padding: 3px 6px;
+  font-size: 11px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
 }
 
-.status-badge.live {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-win);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+.win95-status-field.field-badge {
+  flex-shrink: 0;
 }
 
-.status-badge.fallback {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--accent-gold);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+.win95-status-field.field-text {
+  flex: 1;
+  min-width: 200px;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.refresh-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-primary);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 500;
+.retro-badge {
+  font-weight: bold;
+  padding: 2px 6px;
+  font-size: 10px;
+  border: 1px solid;
+}
+
+.retro-badge.live {
+  border-color: #008000;
+  color: var(--color-completed-text);
+  background: rgba(0, 128, 0, 0.08);
+}
+
+.retro-badge.fallback {
+  border-color: #808000;
+  color: #808000;
+  background: rgba(128, 128, 0, 0.08);
+}
+
+/* Push button styling */
+.win95-btn {
+  font-family: inherit;
+  font-size: 11px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  padding: 3px 10px;
   cursor: pointer;
+  outline: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: var(--transition-smooth);
+  justify-content: center;
+  gap: 5px;
+  user-select: none;
 }
 
-.refresh-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.3);
+.win95-btn:active:not(:disabled) {
+  border-top: 1.5px solid var(--win-border-darkest);
+  border-left: 1.5px solid var(--win-border-darkest);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-dark),
+              inset -1px -1px 0 var(--win-bg);
+  padding: 4px 9px 2px 11px; /* shift text down and right */
 }
 
-.refresh-btn:disabled {
-  opacity: 0.5;
+.win95-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Controls Grid (Search & Filter) */
-.controls {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+.win95-btn.toolbar-btn {
+  height: 20px;
+  padding: 2px 8px;
 }
 
-@media (min-width: 768px) {
-  .controls {
-    grid-template-columns: 2fr 1fr;
-  }
+/* Warnings / Dialog banners */
+.win95-banner-warning {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background: var(--win-bg);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  margin-bottom: 12px;
 }
 
-.search-wrapper, .filter-wrapper {
+.warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  animation: flash 1s infinite alternate;
+}
+
+.warning-text {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@keyframes flash {
+  from { opacity: 1; }
+  to { opacity: 0.4; }
+}
+
+/* Tab selectors (Folder Tabs) */
+.win95-tabs {
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+  padding-left: 6px;
+  z-index: 10;
   position: relative;
-  display: flex;
-  align-items: center;
+  bottom: -2px; /* overlap border */
 }
 
-.search-icon, .filter-icon {
-  position: absolute;
-  left: 16px;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.input-control {
-  width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 12px 16px 12px 46px;
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
+.win95-tab-header {
+  background: var(--win-bg);
+  color: var(--win-fg);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px 0 0 var(--win-border-dark);
+  padding: 4px 12px 3px 12px;
+  cursor: pointer;
   outline: none;
-  transition: var(--transition-smooth);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-bottom: none;
 }
 
-.input-control:focus {
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+.win95-tab-header.active {
+  padding: 6px 14px 4px 14px;
+  margin-top: -2px;
+  z-index: 20;
+  border-bottom: none;
+  background: var(--win-bg);
 }
 
-/* Group Standings View */
-.groups-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
+.win95-tab-pane {
+  background: var(--win-bg);
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  padding: 12px;
+  z-index: 15;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
-@media (min-width: 900px) {
-  .groups-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Search Filters Groupbox */
+.win95-groupbox {
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-darkest),
+              inset -0.8px -0.8px 0 var(--win-bg);
+  margin: 4px 0 14px 0;
+  padding: 10px 12px;
+  font-size: 11px;
 }
 
-.group-card {
-  background: var(--bg-card);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(12px);
-  transition: var(--transition-smooth);
+.win95-groupbox legend {
+  font-weight: bold;
+  padding: 0 5px;
+  color: var(--win-fg);
 }
 
-.group-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-color-hover);
+.win95-filters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
 }
 
-.group-header {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--accent-gold);
-  margin-bottom: 16px;
+.filter-input-row, .filter-select-row {
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.filter-input-row {
+  flex: 2 1 240px;
+}
+
+.filter-select-row {
+  flex: 1 1 140px;
+}
+
+.filter-input-row label, .filter-select-row label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.win95-input-control, .win95-select-control {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  padding: 4px 6px;
+  font-family: inherit;
+  font-size: 11px;
+  outline: none;
+  width: 100%;
+}
+
+.win95-select-control {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200L5%205L10%200H0Z%22%20fill%3D%22black%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 8px;
+  padding-right: 20px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.theme-dark .win95-select-control {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200L5%205L10%200H0Z%22%20fill%3D%22white%22/%3E%3C/svg%3E');
+}
+
+/* Matches Grid */
+.win95-matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* Retro Match Card */
+.win95-match-card-win {
+  background: var(--win-bg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-light),
+              inset -0.8px -0.8px 0 var(--win-border-dark);
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+}
+
+.win95-match-card-title {
+  background: var(--win-border-dark);
+  color: #ffffff;
+  padding: 3px 6px;
+  font-weight: bold;
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.theme-dark .win95-match-card-title {
+  background: #333333;
+}
+
+.win95-match-card-body {
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
 }
 
-.table-wrapper {
-  overflow-x: auto;
+.retro-team-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.85rem;
+.retro-team-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-th {
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding: 8px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-td {
-  padding: 10px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  vertical-align: middle;
-}
-
-.team-cell {
+.retro-team-name-flag {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 500;
 }
 
-.team-flag {
+.retro-flag {
   width: 20px;
   height: 14px;
   object-fit: cover;
-  border-radius: 2px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
 }
 
-/* Highlight qualifying positions */
-.qualifying {
-  position: relative;
+.retro-name-txt {
+  font-size: 11px;
 }
 
-.qualifying td {
-  background: rgba(255, 255, 255, 0.015);
+.winner-bold {
+  font-weight: bold;
+  text-decoration: underline;
 }
 
-.qualifying .team-cell::before {
-  content: '';
-  position: absolute;
-  left: -14px;
-  width: 3px;
-  height: 20px;
-  background-color: var(--accent-gold);
-  border-radius: 0 2px 2px 0;
+.retro-score-txt {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.win95-match-score-input {
+  width: 38px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border-top: 1px solid var(--win-border-dark);
+  border-left: 1px solid var(--win-border-dark);
+  border-right: 1px solid var(--win-border-light);
+  border-bottom: 1px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  outline: none;
+  padding: 1px 2px;
+}
+
+.win95-match-score-input::-webkit-outer-spin-button,
+.win95-match-score-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.win95-match-score-input {
+  -moz-appearance: textfield;
+}
+
+.retro-match-penalties {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--win-border-dark);
+  margin-bottom: 6px;
+}
+
+.theme-dark .retro-match-penalties {
+  color: #aaa;
+}
+
+.retro-match-details {
+  border-top: 1px solid var(--win-border-dark);
+  border-bottom: 1px solid var(--win-border-light);
+  padding-top: 6px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--win-border-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-dark .retro-match-details {
+  border-top-color: #333;
+  border-bottom-color: #222;
+  color: #aaa;
+}
+
+.retro-detail-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Badges for cards */
+.match-badge-retro {
+  font-size: 8px;
+  padding: 1px 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 0;
+}
+
+.match-badge-retro.completed {
+  border-color: #008000;
+  color: var(--color-completed-text);
+}
+
+.match-badge-retro.live {
+  border-color: #ff0000;
+  color: var(--color-live-text);
+  background: var(--color-live-bg);
+  animation: retro-flash-badge 1s infinite alternate;
+}
+
+.match-badge-retro.scheduled {
+  border-color: #000080;
+  color: var(--title-bg-start);
+}
+
+@keyframes retro-flash-badge {
+  from { opacity: 1; }
+  to { opacity: 0.6; }
+}
+
+/* Standings View */
+.win95-standings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+
+.win95-group-box-win {
+  background: var(--win-bg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-light),
+              inset -0.8px -0.8px 0 var(--win-border-dark);
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+}
+
+.win95-group-card-title {
+  background: var(--title-bg-start);
+  color: #ffffff;
+  padding: 3px 6px;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.table-viewport {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  overflow-x: auto;
+  margin-top: 4px;
+}
+
+.retro-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: left;
+}
+
+.retro-table th {
+  background: var(--table-header-bg);
+  color: var(--win-fg);
+  font-weight: bold;
+  padding: 5px 6px;
+  border-top: 1px solid var(--win-border-light);
+  border-left: 1px solid var(--win-border-light);
+  border-right: 1px solid var(--win-border-darkest);
+  border-bottom: 1px solid var(--win-border-darkest);
+  box-shadow: inset 0.5px 0.5px 0 var(--win-border-light);
+  position: sticky;
+  top: 0;
+  user-select: none;
+}
+
+.retro-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #e5e5e5;
+  vertical-align: middle;
+}
+
+.theme-dark .retro-table td {
+  border-bottom-color: #2a2a2a;
+}
+
+.retro-table-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.retro-table-flag {
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border: 1px solid #000000;
+}
+
+.retro-table-team-name {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 115px;
+}
+
+.retro-qualifying td {
+  background: rgba(0, 128, 0, 0.04);
+}
+
+.theme-dark .retro-qualifying td {
+  background: rgba(85, 255, 85, 0.03);
+}
+
+.retro-qualifying .idx-cell {
+  color: var(--color-win-text);
+  font-weight: bold;
 }
 
 .text-center {
@@ -387,461 +950,857 @@ td {
 }
 
 .text-bold {
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: bold;
 }
 
-/* Matches Grid View */
-.matches-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .matches-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1100px) {
-  .matches-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.match-card {
-  background: var(--bg-card);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(12px);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition-smooth);
-}
-
-.match-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: transparent;
-  transition: var(--transition-smooth);
-}
-
-.match-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--border-color-hover);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
-}
-
-.match-card.completed::after {
-  background: var(--color-completed);
-  opacity: 0.4;
-}
-
-.match-card.live::after {
-  background: var(--color-live);
-  animation: pulse-border 1.5s infinite;
-}
-
-.match-card.scheduled::after {
-  background: var(--color-scheduled);
-  opacity: 0.4;
-}
-
-.match-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.match-stage {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent-gold);
-}
-
-.match-status {
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-}
-
-.match-status.completed {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-win);
-}
-
-.match-status.live {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-live);
-  animation: pulse 1.5s infinite;
-}
-
-.match-status.scheduled {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--color-scheduled);
-}
-
-.match-teams {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.match-team-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.match-team-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.match-team-flag {
-  width: 26px;
-  height: 18px;
-  object-fit: cover;
-  border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.match-team-name {
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.match-team-score {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 1.25rem;
-}
-
-.winner {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.loser {
-  color: var(--text-secondary);
-}
-
-.match-details {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 10px;
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.match-venue, .match-date {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.match-penalties {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-style: italic;
-  margin-top: 4px;
-}
-
-/* Animations */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-@keyframes pulse-border {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { opacity: 0.3; }
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 48px;
-  background: var(--bg-card);
-  border: var(--glass-border);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.empty-state-icon {
-  font-size: 2.5rem;
-  opacity: 0.5;
-}
-
-/* Footer */
-footer {
-  margin-top: auto;
-  padding-top: 48px;
-  padding-bottom: 16px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-footer a {
-  color: var(--accent-gold);
-  text-decoration: none;
-}
-
-footer a:hover {
-  text-decoration: underline;
-}
-
-/* Loading Spinner */
-.spinner-wrapper {
+/* Loading & Hourglass */
+.win95-loading-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px;
-  gap: 16px;
+  padding: 40px;
+  gap: 12px;
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-left-color: var(--accent-gold);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.win95-hourglass {
+  font-size: 32px;
+  animation: spin-hourglass 1.5s infinite steps(4);
 }
 
-@keyframes spin {
+@keyframes spin-hourglass {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Base styles for filters wrapper */
-.filters-wrapper {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-/* Match score inputs for live editing */
-.match-score-input {
-  width: 50px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 1.25rem;
+.empty-state-retro {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  padding: 30px;
   text-align: center;
-  outline: none;
-  padding: 4px 2px;
-  transition: var(--transition-smooth);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-.match-score-input:focus {
-  border-color: var(--accent-gold);
-  background: rgba(30, 41, 59, 0.9);
-  box-shadow: 0 0 0 2px var(--accent-gold-glow);
+.empty-state-retro h3 {
+  margin-top: 8px;
+  font-weight: bold;
 }
 
-/* Remove default arrows from number input */
-.match-score-input::-webkit-outer-spin-button,
-.match-score-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.match-score-input {
-  -moz-appearance: textfield;
-}
-
-/* Sticky gold banner for live matches warning */
-.live-warning-banner {
-  position: sticky;
-  top: 16px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fef08a; /* Warm gold text */
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
-  z-index: 1100;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
-.live-warning-content {
+/* Modal Dialogs */
+.win95-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.9rem;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.win95-dialog {
+  max-width: 420px;
+  width: 90%;
+  min-height: auto;
+  height: auto;
+  border-top: 2px solid var(--win-border-light);
+  border-left: 2px solid var(--win-border-light);
+  border-right: 2px solid var(--win-border-darkest);
+  border-bottom: 2px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  z-index: 2010;
+}
+
+.win95-dialog-body {
+  padding: 12px;
+  background: var(--win-bg);
+  color: var(--win-fg);
+  display: flex;
+  flex-direction: column;
+}
+
+.about-main-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.about-system-icon {
+  font-size: 32px;
+  user-select: none;
+}
+
+.about-text-content h2 {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.about-text-content p {
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.about-text-content .license-text {
+  margin-top: 6px;
+  color: #666666;
+}
+
+.theme-dark .about-text-content .license-text {
+  color: #aaaaaa;
+}
+
+.about-description-box {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-darkest);
+  padding: 8px;
+  font-size: 11px;
+  height: 90px;
+  overflow-y: auto;
+  margin-bottom: 12px;
   line-height: 1.4;
 }
 
-.live-warning-icon {
-  font-size: 1.25rem;
-  flex-shrink: 0;
-  animation: pulse 1.5s infinite;
+.about-btn-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Status Bar & Taskbar */
+.win95-status-bar {
+  display: flex;
+  margin-top: 8px;
+  gap: 4px;
+  background: var(--win-bg);
+  padding: 2px 0 0 0;
+}
+
+.win95-status-bar .status-bar-pane {
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-darkest);
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.pane-desc { flex: 2.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pane-loaded { flex: 1; text-align: center; }
+.pane-time { flex: 1; text-align: center; }
+
+/* Desktop Taskbar fixed bottom */
+.win95-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background: var(--win-bg);
+  border-top: 2.5px solid var(--win-border-light);
+  box-shadow: inset 0 1px 0 var(--win-border-light);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  font-size: 11px;
+  user-select: none;
+}
+
+.win95-start-btn {
+  height: 22px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+}
+
+.win95-start-btn:active {
+  border-top: 1.5px solid var(--win-border-darkest);
+  border-left: 1.5px solid var(--win-border-darkest);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-dark),
+              inset -1px -1px 0 var(--win-bg);
+  padding: 3px 7px 1px 9px;
+}
+
+.win95-taskbar-divider {
+  width: 2px;
+  height: 18px;
+  background: var(--win-border-dark);
+  border-right: 1px solid var(--win-border-light);
+  margin: 0 8px;
+}
+
+.win95-active-tasks {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.taskbar-item {
+  height: 22px;
+  max-width: 140px;
+  min-width: 80px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  border-radius: 0;
+}
+
+.taskbar-item.active {
+  background: var(--win-bg);
+  border-top: 1.5px solid var(--win-border-darkest);
+  border-left: 1.5px solid var(--win-border-darkest);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 1px 1px 0 var(--win-border-dark),
+              inset -1px -1px 0 var(--win-bg);
+  font-weight: bold;
+  padding: 3px 7px 1px 9px;
+}
+
+.win95-system-tray {
+  border-top: 1.5px solid var(--win-border-dark);
+  border-left: 1.5px solid var(--win-border-dark);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
+  box-shadow: inset 0.8px 0.8px 0 var(--win-border-darkest),
+              inset -0.8px -0.8px 0 var(--win-bg);
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  background: var(--win-bg);
+  color: var(--win-fg);
+  height: 22px;
+}
+
+.tray-icon {
+  font-size: 11px;
+}
+
+.tray-time {
+  font-weight: bold;
+  font-size: 11px;
+  margin-left: 2px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%224%22%20height%3D%224%22%20viewBox%3D%220%200%204%204%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H2V2H0V0ZM2%202H4V4H2V2Z%22%20fill%3D%22%23c0c0c0%22/%3E%3Cpath%20d%3D%22M2%200H4V2H2V0ZM0%202H2V4H0V2Z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E");
+}
+
+.theme-dark ::-webkit-scrollbar-track {
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%224%22%20height%3D%224%22%20viewBox%3D%220%200%204%204%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200H2V2H0V0ZM2%202H4V4H2V2Z%22%20fill%3D%22%232d2d2d%22/%3E%3Cpath%20d%3D%22M2%200H4V2H2V0ZM0%202H2V4H0V2Z%22%20fill%3D%22%23111111%22/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-top: 1.5px solid var(--win-border-light);
+  border-left: 1.5px solid var(--win-border-light);
+  border-right: 1.5px solid var(--win-border-darkest);
+  border-bottom: 1.5px solid var(--win-border-darkest);
+  box-shadow: inset 1px 1px 0 var(--win-border-light),
+              inset -1px -1px 0 var(--win-border-dark);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb);
+  border-top: 1.5px solid var(--win-border-darkest);
+  border-left: 1.5px solid var(--win-border-darkest);
+  border-right: 1.5px solid var(--win-border-light);
+  border-bottom: 1.5px solid var(--win-border-light);
 }
 
 /* Mobile & Tablet Responsiveness */
 @media (max-width: 768px) {
-  .live-warning-banner {
-    top: 8px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
+  .win95-desktop {
+    padding: 0;
   }
 
-  .live-warning-content {
-    font-size: 0.8rem;
+  .win95-window {
+    min-height: 100vh;
+    height: 100vh;
+    border: none;
+    box-shadow: none;
+  }
+
+  .win95-filters-grid {
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
   }
 
-  .live-warning-icon {
-    font-size: 1.1rem;
+  .filter-input-row, .filter-select-row {
+    width: 100%;
+    flex: none; /* Disable vertical flex-grow / height basis stretching on mobile */
   }
 
-  #root {
-    padding: 16px;
-  }
-
-  header {
-    margin-bottom: 24px;
-  }
-
-  h1 {
-    font-size: 2rem;
-  }
-
-  header p {
-    font-size: 0.9rem;
-    padding: 0 8px;
-  }
-
-  .status-banner {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 12px;
+  .win95-standings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
   }
 
-  .status-banner > div {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 6px !important;
-  }
-
-  .refresh-btn {
-    justify-content: center;
-    width: 100%;
-    padding: 8px;
-  }
-
-  .tabs-container {
-    margin-bottom: 24px;
-  }
-
-  .tab-btn {
-    padding: 8px 16px;
-    font-size: 0.85rem;
-  }
-
-  .group-card {
-    padding: 16px;
-  }
-
-  /* Table density adjustments for mobile */
-  table {
-    font-size: 0.8rem;
-  }
-
-  th, td {
-    padding: 8px 4px;
-  }
-
-  .team-cell {
-    gap: 6px;
-  }
-
-  .team-flag {
-    width: 18px;
-    height: 12px;
-  }
-}
-
-/* Small Screen Phones Responsiveness */
-@media (max-width: 480px) {
-  .tabs {
-    width: 100%;
-  }
-
-  .tab-btn {
-    flex: 1;
-    justify-content: center;
-    padding: 10px 8px;
-  }
-
-  .filters-wrapper {
-    flex-direction: column;
-  }
-
-  /* Hide GF/GC columns to avoid table overflow */
   .hide-mobile {
     display: none !important;
   }
-
-  table th, table td {
-    padding: 6px 3px;
-  }
-
-  .match-card {
-    padding: 12px;
-  }
-
-  .match-team-name {
-    font-size: 0.85rem;
-  }
-
-  .match-team-score {
-    font-size: 1.1rem;
-  }
-
-  .match-details {
-    font-size: 0.7rem;
+  
+  .retro-table th, .retro-table td {
+    padding: 4px 3px;
   }
 }
+
+/* ========================================== */
+/* Theme Specific Component Overrides */
+/* ========================================== */
+
+/* Typography Font Overrides */
+.theme-winxp, .theme-winxp * {
+  font-family: Tahoma, Arial, sans-serif !important;
+}
+.theme-winvista, .theme-winvista *,
+.theme-win7, .theme-win7 * {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif !important;
+}
+.theme-win10, .theme-win10 * {
+  font-family: "Segoe UI", -apple-system, Arial, sans-serif !important;
+}
+
+/* ========================================== */
+/* Windows XP Styles */
+/* ========================================== */
+
+.theme-winxp .win95-raised,
+.theme-winxp .win95-sunken,
+.theme-winxp .win95-tab-pane,
+.theme-winxp .win95-groupbox,
+.theme-winxp .win95-input-control,
+.theme-winxp .win95-select-control,
+.theme-winxp .table-viewport,
+.theme-winxp .win95-status-field.field-text,
+.theme-winxp .win95-status-bar .status-bar-pane,
+.theme-winxp .win95-dropdown-menu,
+.theme-winxp .win95-banner-warning {
+  border: 1px solid #7f9db9 !important;
+  box-shadow: none !important;
+  border-radius: 4px !important;
+}
+
+.theme-winxp .win95-window.main-window {
+  border: 3px solid #0054e3 !important;
+  border-radius: 8px 8px 0 0 !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+}
+
+.theme-winxp .win95-title-bar {
+  border-radius: 5px 5px 0 0;
+  height: 28px;
+  background: linear-gradient(to bottom, #0058e6 0%, #3a8bf5 25%, #0058e6 70%, #002e7a 100%) !important;
+  border-bottom: 1px solid #002e7a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.theme-winxp .win95-title-btn {
+  border-radius: 3px !important;
+  background: linear-gradient(to bottom, #5d9aff, #0054e3) !important;
+  border: 1px solid #002e7a !important;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4) !important;
+  color: #ffffff !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.theme-winxp .win95-title-btn.close {
+  background: linear-gradient(to bottom, #ff9b85, #d82c0e 40%, #a81a02 100%) !important;
+  border-color: #5d0f00 !important;
+}
+
+.theme-winxp .win95-menu-bar {
+  background: #ece9d8 !important;
+  border-bottom: 1px solid #aca899 !important;
+}
+
+.theme-winxp .win95-tab-header {
+  border-radius: 5px 5px 0 0 !important;
+  border-color: #aca899 #aca899 transparent #aca899 !important;
+  background: #e1ddd0 !important;
+  box-shadow: none !important;
+  margin-right: 2px;
+}
+
+.theme-winxp .win95-tab-header.active {
+  background: #ece9d8 !important;
+  border-color: #716f64 #716f64 transparent #716f64 !important;
+  font-weight: bold;
+}
+
+.theme-winxp .win95-btn {
+  border-radius: 4px !important;
+  border: 1px solid #7f9db9 !important;
+  background: linear-gradient(to bottom, #ffffff 0%, #eae7d4 100%) !important;
+  box-shadow: inset 0 1px 0 #ffffff !important;
+}
+
+.theme-winxp .win95-btn:active:not(:disabled) {
+  background: #e3dec7 !important;
+  border-color: #7f9db9 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15) !important;
+  padding: 3px 10px !important; /* Disable Win95 shift */
+}
+
+.theme-winxp .win95-match-card-win {
+  border: 1px solid #aca899 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+.theme-winxp .win95-match-card-title {
+  background: linear-gradient(to right, #7a96df 0%, #c9d7f5 100%) !important;
+  color: #000000 !important;
+  border-radius: 3px 3px 0 0;
+  border-bottom: 1px solid #7a96df;
+}
+
+.theme-winxp .retro-table th {
+  background: #e2decb !important;
+  border: 1px solid #aca899 !important;
+  box-shadow: none !important;
+}
+
+/* XP Scrollbars */
+.theme-winxp ::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+.theme-winxp ::-webkit-scrollbar-track {
+  background: #f1efe2 !important;
+  background-image: none !important;
+}
+.theme-winxp ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #eae6d1, #c7c2ab) !important;
+  border: 1px solid #a8a38c !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+.theme-winxp ::-webkit-scrollbar-thumb:active {
+  background: #a8a38c !important;
+}
+
+/* ========================================== */
+/* Windows Vista / 7 Aero Styles */
+/* ========================================== */
+
+.theme-winvista .win95-raised,
+.theme-winvista .win95-sunken,
+.theme-winvista .win95-tab-pane,
+.theme-winvista .win95-groupbox,
+.theme-winvista .win95-input-control,
+.theme-winvista .win95-select-control,
+.theme-winvista .table-viewport,
+.theme-winvista .win95-status-field.field-text,
+.theme-winvista .win95-status-bar .status-bar-pane,
+.theme-winvista .win95-dropdown-menu,
+.theme-winvista .win95-banner-warning,
+.theme-win7 .win95-raised,
+.theme-win7 .win95-sunken,
+.theme-win7 .win95-tab-pane,
+.theme-win7 .win95-groupbox,
+.theme-win7 .win95-input-control,
+.theme-win7 .win95-select-control,
+.theme-win7 .table-viewport,
+.theme-win7 .win95-status-field.field-text,
+.theme-win7 .win95-status-bar .status-bar-pane,
+.theme-win7 .win95-dropdown-menu,
+.theme-win7 .win95-banner-warning {
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  border-radius: 4px !important;
+}
+
+.theme-winvista .win95-window.main-window,
+.theme-win7 .win95-window.main-window {
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+.theme-winvista .win95-window.main-window {
+  background: rgba(35, 35, 35, 0.78) !important;
+}
+.theme-win7 .win95-window.main-window {
+  background: rgba(220, 235, 248, 0.82) !important;
+}
+
+.theme-winvista .win95-title-bar,
+.theme-win7 .win95-title-bar {
+  border-radius: 7px 7px 0 0;
+  height: 32px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 50%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.2) 100%) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.25) !important;
+  color: #ffffff;
+}
+
+.theme-win7 .win95-title-bar {
+  color: #1e1e1e !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.95) !important;
+}
+
+.theme-winvista .win95-title-btn,
+.theme-win7 .win95-title-btn {
+  border-radius: 4px !important;
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.15) 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important;
+  color: inherit !important;
+  width: 20px !important;
+  height: 18px !important;
+}
+
+.theme-winvista .win95-title-btn.close,
+.theme-win7 .win95-title-btn.close {
+  background: linear-gradient(to bottom, #ff8282 0%, #d82c0e 50%, #8c0c00 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(0,0,0,0.4) !important;
+}
+
+.theme-winvista .win95-menu-bar,
+.theme-win7 .win95-menu-bar {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+  color: inherit !important;
+}
+
+.theme-winvista .win95-dropdown-menu,
+.theme-win7 .win95-dropdown-menu {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #000000 !important;
+  border: 1px solid rgba(0,0,0,0.18) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+}
+
+.theme-winvista .win95-dropdown-item,
+.theme-win7 .win95-dropdown-item {
+  color: #000000 !important;
+}
+
+.theme-winvista .win95-dropdown-item:hover,
+.theme-win7 .win95-dropdown-item:hover {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.theme-winvista .win95-tab-header,
+.theme-win7 .win95-tab-header {
+  background: rgba(120, 140, 160, 0.15) !important;
+  border: 1px solid rgba(0,0,0,0.15) !important;
+  border-bottom: none !important;
+  border-radius: 5px 5px 0 0 !important;
+  box-shadow: none !important;
+  margin-right: 2px;
+}
+
+.theme-winvista .win95-tab-header.active,
+.theme-win7 .win95-tab-header.active {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0,0,0,0.15) rgba(0,0,0,0.15) transparent rgba(0,0,0,0.15) !important;
+  color: #000000 !important;
+  font-weight: bold;
+}
+
+.theme-winvista .win95-tab-pane,
+.theme-win7 .win95-tab-pane {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #111111 !important;
+  border: 1px solid rgba(0,0,0,0.15) !important;
+  border-radius: 0 0 6px 6px !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06) !important;
+}
+
+.theme-winvista .win95-match-card-win,
+.theme-win7 .win95-match-card-win {
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  border-radius: 5px !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+.theme-winvista .win95-match-card-title,
+.theme-win7 .win95-match-card-title {
+  background: linear-gradient(to bottom, #fcfcfc, #ececec) !important;
+  color: #333333 !important;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid #dfdfdf !important;
+}
+
+.theme-winvista .win95-btn,
+.theme-win7 .win95-btn {
+  border-radius: 4px !important;
+  border: 1px solid #b0b0b0 !important;
+  background: linear-gradient(to bottom, #ffffff 0%, #e8e8e8 50%, #d2d2d2 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4) !important;
+  color: #111111 !important;
+}
+
+.theme-winvista .win95-btn:active:not(:disabled),
+.theme-win7 .win95-btn:active:not(:disabled) {
+  background: #cccccc !important;
+  border-color: #909090 !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15) !important;
+  padding: 3px 10px !important; /* Disable Win95 shift */
+}
+
+.theme-winvista .retro-table th,
+.theme-win7 .retro-table th {
+  background: linear-gradient(to bottom, #fcfcfc, #e8edf4) !important;
+  border: 1px solid #b9c9da !important;
+  box-shadow: none !important;
+  color: #1e1e1e !important;
+}
+
+/* Vista / 7 Scrollbars */
+.theme-win7 ::-webkit-scrollbar,
+.theme-winvista ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.theme-win7 ::-webkit-scrollbar-track,
+.theme-winvista ::-webkit-scrollbar-track {
+  background: rgba(240,240,240,0.5) !important;
+  background-image: none !important;
+}
+.theme-win7 ::-webkit-scrollbar-thumb,
+.theme-winvista ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #dbe8f5, #b8cde4) !important;
+  border: 1px solid #9bbcd8 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+.theme-win7 ::-webkit-scrollbar-thumb:hover,
+.theme-winvista ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to right, #ecf4fc, #9dc4ec) !important;
+}
+
+/* ========================================== */
+/* Windows 10 Styles (Flat & Modern) */
+/* ========================================== */
+
+.theme-win10 .win95-raised,
+.theme-win10 .win95-sunken,
+.theme-win10 .win95-tab-pane,
+.theme-win10 .win95-groupbox,
+.theme-win10 .win95-input-control,
+.theme-win10 .win95-select-control,
+.theme-win10 .table-viewport,
+.theme-win10 .win95-status-field.field-text,
+.theme-win10 .win95-status-bar .status-bar-pane,
+.theme-win10 .win95-dropdown-menu,
+.theme-win10 .win95-banner-warning {
+  border: 1px solid #dfdfdf !important;
+  box-shadow: none !important;
+  border-radius: 0px !important;
+}
+
+.theme-win10 .win95-window.main-window {
+  border: 1px solid #888888 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  border-radius: 0px !important;
+}
+
+.theme-win10 .win95-title-bar {
+  background: #ffffff !important;
+  color: #333333 !important;
+  height: 30px;
+  border-bottom: 1px solid #f2f2f2 !important;
+}
+
+.theme-win10 .win95-title-btn {
+  border: none !important;
+  background: transparent !important;
+  color: #333333 !important;
+  width: 32px !important;
+  height: 30px !important;
+  font-size: 11px !important;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+}
+
+.theme-win10 .win95-title-btn:hover {
+  background: #e5e5e5 !important;
+}
+
+.theme-win10 .win95-title-btn.close:hover {
+  background: #e81123 !important;
+  color: #ffffff !important;
+}
+
+.theme-win10 .win95-menu-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f2f2f2 !important;
+}
+
+.theme-win10 .win95-menu-btn {
+  color: #333333 !important;
+}
+
+.theme-win10 .win95-menu-btn:hover,
+.theme-win10 .win95-menu-btn.active {
+  background: #f2f2f2 !important;
+  color: #000000 !important;
+}
+
+.theme-win10 .win95-dropdown-menu {
+  background: #ffffff !important;
+  color: #333333 !important;
+  border: 1px solid #dfdfdf !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.theme-win10 .win95-dropdown-item {
+  color: #333333 !important;
+}
+
+.theme-win10 .win95-dropdown-item:hover {
+  background: #f2f2f2 !important;
+  color: #000000 !important;
+}
+
+.theme-win10 .win95-tab-header {
+  background: #f1f1f1 !important;
+  color: #555555 !important;
+  border: 1px solid #dfdfdf !important;
+  border-bottom: none !important;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  margin-right: 2px;
+}
+
+.theme-win10 .win95-tab-header.active {
+  background: #ffffff !important;
+  border-color: #dfdfdf #dfdfdf transparent #dfdfdf !important;
+  color: #000000 !important;
+  border-top: 2px solid #0078d7 !important;
+  font-weight: normal !important;
+}
+
+.theme-win10 .win95-tab-pane {
+  background: #ffffff !important;
+  border: 1px solid #dfdfdf !important;
+  box-shadow: none !important;
+}
+
+.theme-win10 .win95-match-card-win {
+  border: 1px solid #dfdfdf !important;
+  border-radius: 0px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.theme-win10 .win95-match-card-title {
+  background: #fbfbfb !important;
+  color: #333333 !important;
+  border-bottom: 1px solid #f3f3f3 !important;
+}
+
+.theme-win10 .win95-btn {
+  background: #e1e1e1 !important;
+  border: 1px solid #cccccc !important;
+  box-shadow: none !important;
+  border-radius: 0px !important;
+}
+
+.theme-win10 .win95-btn:hover {
+  background: #d0d0d0 !important;
+  border-color: #0078d7 !important;
+}
+
+.theme-win10 .win95-btn:active:not(:disabled) {
+  background: #cce4f7 !important;
+  border-color: #005499 !important;
+  padding: 3px 10px !important; /* Disable Win95 shift */
+}
+
+.theme-win10 .retro-table th {
+  background: #fafafa !important;
+  border: none !important;
+  border-bottom: 1px solid #dfdfdf !important;
+  box-shadow: none !important;
+  color: #555555 !important;
+}
+
+.theme-win10 .retro-table td {
+  border-bottom: 1px solid #f2f2f2 !important;
+}
+
+.theme-win10 .retro-flag,
+.theme-win10 .retro-table-flag {
+  border: none !important;
+}
+
+/* Win10 Scrollbars */
+.theme-win10 ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.theme-win10 ::-webkit-scrollbar-track {
+  background: #f0f0f0 !important;
+  background-image: none !important;
+}
+.theme-win10 ::-webkit-scrollbar-thumb {
+  background: #cdcdcd !important;
+  border: none !important;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+}
+.theme-win10 ::-webkit-scrollbar-thumb:hover {
+  background: #a6a6a6 !important;
+}
+
+
