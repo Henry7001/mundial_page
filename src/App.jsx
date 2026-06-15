@@ -1507,7 +1507,7 @@ Instrucciones:
                         <strong>MundialStats 2026</strong><br/>
                         Versión 1.0 (Mobile Edition)<br/>
                         Simulador interactivo de la Copa del Mundo 2026.<br/>
-                        Derechos reservados © 2026 Antigravity Co.
+                        Derechos reservados © 2026 Henry7001
                       </p>
                       <button className="win95-btn" style={{ marginTop: '10px', width: '100%' }} onClick={() => setShowAbout(true)}>
                         Ver Licencia
@@ -1592,7 +1592,7 @@ Instrucciones:
                 <div className="about-text-content">
                   <h2>MundialStats 2026</h2>
                   <p>Versión 1.0 (Build 9500)</p>
-                  <p>Derechos reservados © 2026 Antigravity Co.</p>
+                  <p>Derechos reservados © 2026 Henry7001</p>
                   <p className="license-text">Este programa está licenciado para el uso interactivo de simulación de la Copa del Mundo 2026.</p>
                 </div>
               </div>
