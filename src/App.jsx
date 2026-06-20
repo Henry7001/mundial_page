@@ -297,7 +297,7 @@ const calculateGroupsStandings = (normalizedMatches, teamsList) => {
     // Calculate stats based on completed and live matches in this group
     normalizedMatches.forEach(match => {
       if ((match.stage_name === 'First stage' || match.stage_name === 'group') && 
-          (match.status === 'completed' || match.status === 'in_progress') && 
+          (match.status === 'completed' || match.status === 'in_progress' || match.status === 'simulated') && 
           match.group === letter) {
         
         const home = teamsInGroup.find(t => t.id === String(match.home_team_id));
@@ -350,6 +350,256 @@ const calculateGroupsStandings = (normalizedMatches, teamsList) => {
   });
 };
 
+// Extractor and sorter of best third-placed teams from the groups (for 2026 World Cup 48-team format)
+const calculateBestThirds = (groupsList) => {
+  if (!groupsList || groupsList.length === 0) return [];
+  
+  const thirds = groupsList.map(group => {
+    // Index 2 is the 3rd-placed team in each group (sorted lists)
+    const thirdTeam = group.teams && group.teams[2];
+    if (!thirdTeam) return null;
+    return {
+      ...thirdTeam,
+      group: group.letter
+    };
+  }).filter(Boolean);
+
+  // FIFA World Cup tie-breakers for third-placed teams:
+  // 1. Points
+  // 2. Goal Difference
+  // 3. Goals Scored
+  // 4. Wins
+  // 5. Stable sorting fallback (group letter)
+  thirds.sort((a, b) => {
+    if (b.group_points !== a.group_points) return b.group_points - a.group_points;
+    if (b.goal_differential !== a.goal_differential) return b.goal_differential - a.goal_differential;
+    if (b.goals_for !== a.goals_for) return b.goals_for - a.goals_for;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    return a.group.localeCompare(b.group);
+  });
+
+  return thirds;
+};
+
+// Pre-defined pairings for the 16 Round of 32 matches in the 2026 World Cup format
+const slotMappings = [
+  { id: 73, name: "M73", home: { type: "runner_up", group: "A" }, away: { type: "runner_up", group: "B" } },
+  { id: 74, name: "M74", home: { type: "winner", group: "E" }, away: { type: "third", index: 0 } }, // 1st best third
+  { id: 75, name: "M75", home: { type: "winner", group: "F" }, away: { type: "runner_up", group: "C" } },
+  { id: 76, name: "M76", home: { type: "winner", group: "C" }, away: { type: "runner_up", group: "F" } },
+  { id: 77, name: "M77", home: { type: "winner", group: "I" }, away: { type: "third", index: 1 } },
+  { id: 78, name: "M78", home: { type: "runner_up", group: "E" }, away: { type: "runner_up", group: "I" } },
+  { id: 79, name: "M79", home: { type: "winner", group: "A" }, away: { type: "third", index: 2 } },
+  { id: 80, name: "M80", home: { type: "winner", group: "G" }, away: { type: "runner_up", group: "D" } },
+  { id: 81, name: "M81", home: { type: "winner", group: "B" }, away: { type: "third", index: 3 } },
+  { id: 82, name: "M82", home: { type: "winner", group: "H" }, away: { type: "runner_up", group: "J" } },
+  { id: 83, name: "M83", home: { type: "winner", group: "D" }, away: { type: "third", index: 4 } },
+  { id: 84, name: "M84", home: { type: "runner_up", group: "K" }, away: { type: "runner_up", group: "L" } },
+  { id: 85, name: "M85", home: { type: "winner", group: "H" }, away: { type: "third", index: 5 } },
+  { id: 86, name: "M86", home: { type: "winner", group: "J" }, away: { type: "runner_up", group: "H" } },
+  { id: 87, name: "M87", home: { type: "winner", group: "L" }, away: { type: "third", index: 6 } },
+  { id: 88, name: "M88", home: { type: "winner", group: "K" }, away: { type: "third", index: 7 } },
+];
+
+const resolveTeam = (slot, groupsList, bestThirdsList) => {
+  if (!groupsList || groupsList.length === 0) {
+    return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
+  }
+  if (slot.type === "winner" || slot.type === "runner_up") {
+    const group = groupsList.find(g => g.letter === slot.group);
+    if (group && group.teams && group.teams.length > 0) {
+      // Check if group is decided (at least one team has games played)
+      const isDecided = group.teams.some(t => t.games_played > 0);
+      if (isDecided) {
+        const team = slot.type === "winner" ? group.teams[0] : group.teams[1];
+        if (team) {
+          return {
+            country: team.country,
+            name: team.name,
+            isPlaceholder: false,
+            label: getCountryNameEs(team.country, team.name)
+          };
+        }
+      }
+      return {
+        country: "TBD",
+        name: `Por definir (${slot.type === "winner" ? "1°" : "2°"}${slot.group})`,
+        isPlaceholder: true,
+        label: `${slot.type === "winner" ? "1°" : "2°"} Grupo ${slot.group}`
+      };
+    }
+  } else if (slot.type === "third") {
+    const thirdTeam = bestThirdsList && bestThirdsList[slot.index];
+    if (thirdTeam) {
+      const group = groupsList.find(g => g.letter === thirdTeam.group);
+      const isDecided = group && group.teams.some(t => t.games_played > 0);
+      if (isDecided) {
+        return {
+          country: thirdTeam.country,
+          name: thirdTeam.name,
+          isPlaceholder: false,
+          label: getCountryNameEs(thirdTeam.country, thirdTeam.name)
+        };
+      }
+    }
+    return {
+      country: "TBD",
+      name: `Por definir (3° #${slot.index + 1})`,
+      isPlaceholder: true,
+      label: `3° Grupo TBD (#${slot.index + 1})`
+    };
+  }
+  return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
+};
+
+const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores) => {
+  const matches = {};
+
+  // 1. Resolve Round of 32 (M73 - M88)
+  slotMappings.forEach(mapping => {
+    const homeTeam = resolveTeam(mapping.home, groupsList, bestThirdsList);
+    const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList);
+    
+    const score = knockoutScores[mapping.id] || {};
+    const homeScore = score.home !== undefined ? score.home : null;
+    const awayScore = score.away !== undefined ? score.away : null;
+    
+    // Determine winner and loser
+    let winner = null;
+    let loser = null;
+    if (homeScore !== null && awayScore !== null) {
+      if (homeScore > awayScore) {
+        winner = homeTeam;
+        loser = awayTeam;
+      } else if (awayScore > homeScore) {
+        winner = awayTeam;
+        loser = homeTeam;
+      } else {
+        const homePens = score.homePens || 0;
+        const awayPens = score.awayPens || 0;
+        if (homePens > awayPens) {
+          winner = homeTeam;
+          loser = awayTeam;
+        } else if (awayPens > homePens) {
+          winner = awayTeam;
+          loser = homeTeam;
+        } else {
+          winner = homeTeam;
+          loser = awayTeam;
+        }
+      }
+    }
+
+    matches[mapping.id] = {
+      id: mapping.id,
+      name: mapping.name,
+      stage: 'r32',
+      home: homeTeam,
+      away: awayTeam,
+      homeScore,
+      awayScore,
+      homePens: score.homePens || 0,
+      awayPens: score.awayPens || 0,
+      winner,
+      loser
+    };
+  });
+
+  // Helper to resolve subsequent knockout rounds
+  const resolveNextRoundMatch = (matchId, stage, homeSourceId, awaySourceId, isLoser = false) => {
+    const homeSource = matches[homeSourceId];
+    const awaySource = matches[awaySourceId];
+    
+    const homeTeam = homeSource ? (isLoser ? homeSource.loser : homeSource.winner) : null;
+    const awayTeam = awaySource ? (isLoser ? awaySource.loser : awaySource.winner) : null;
+
+    const score = knockoutScores[matchId] || {};
+    const homeScore = score.home !== undefined ? score.home : null;
+    const awayScore = score.away !== undefined ? score.away : null;
+
+    let winner = null;
+    let loser = null;
+    if (homeTeam && awayTeam && !homeTeam.isPlaceholder && !awayTeam.isPlaceholder && homeScore !== null && awayScore !== null) {
+      if (homeScore > awayScore) {
+        winner = homeTeam;
+        loser = awayTeam;
+      } else if (awayScore > homeScore) {
+        winner = awayTeam;
+        loser = homeTeam;
+      } else {
+        const homePens = score.homePens || 0;
+        const awayPens = score.awayPens || 0;
+        if (homePens > awayPens) {
+          winner = homeTeam;
+          loser = awayTeam;
+        } else if (awayPens > homePens) {
+          winner = awayTeam;
+          loser = homeTeam;
+        } else {
+          winner = homeTeam;
+          loser = awayTeam;
+        }
+      }
+    }
+
+    const defaultHomePlaceholder = {
+      country: "TBD",
+      name: `Ganador M${homeSourceId}`,
+      isPlaceholder: true,
+      label: isLoser ? `Perdedor M${homeSourceId}` : `Ganador M${homeSourceId}`
+    };
+
+    const defaultAwayPlaceholder = {
+      country: "TBD",
+      name: `Ganador M${awaySourceId}`,
+      isPlaceholder: true,
+      label: isLoser ? `Perdedor M${awaySourceId}` : `Ganador M${awaySourceId}`
+    };
+
+    matches[matchId] = {
+      id: matchId,
+      name: `M${matchId}`,
+      stage,
+      home: homeTeam || defaultHomePlaceholder,
+      away: awayTeam || defaultAwayPlaceholder,
+      homeScore,
+      awayScore,
+      homePens: score.homePens || 0,
+      awayPens: score.awayPens || 0,
+      winner,
+      loser
+    };
+  };
+
+  // 2. Resolve Round of 16 (M89 - M96)
+  resolveNextRoundMatch(89, 'r16', 73, 74);
+  resolveNextRoundMatch(90, 'r16', 75, 76);
+  resolveNextRoundMatch(91, 'r16', 77, 78);
+  resolveNextRoundMatch(92, 'r16', 79, 80);
+  resolveNextRoundMatch(93, 'r16', 81, 82);
+  resolveNextRoundMatch(94, 'r16', 83, 84);
+  resolveNextRoundMatch(95, 'r16', 85, 86);
+  resolveNextRoundMatch(96, 'r16', 87, 88);
+
+  // 3. Resolve Quarter-finals (M97 - M100)
+  resolveNextRoundMatch(97, 'quarter', 89, 90);
+  resolveNextRoundMatch(98, 'quarter', 91, 92);
+  resolveNextRoundMatch(99, 'quarter', 93, 94);
+  resolveNextRoundMatch(100, 'quarter', 95, 96);
+
+  // 4. Resolve Semi-finals (M101 - M102)
+  resolveNextRoundMatch(101, 'semi', 97, 98);
+  resolveNextRoundMatch(102, 'semi', 99, 100);
+
+  // 5. Resolve Third Place Play-off (M103)
+  resolveNextRoundMatch(103, 'third', 101, 102, true);
+
+  // 6. Resolve Final (M104)
+  resolveNextRoundMatch(104, 'final', 101, 102);
+
+  return matches;
+};
+
 function App() {
   const [matches, setMatches] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -364,6 +614,7 @@ function App() {
   // State and ref for interactive score edits
   const [customScores, setCustomScores] = useState({});
   const customScoresRef = useRef({});
+  const rawMatchesRef = useRef([]);
 
   // Theme selection state (Windows retro versions)
   const [theme, setTheme] = useState(() => {
@@ -383,16 +634,27 @@ function App() {
   const [isMatchesMinimized, setIsMatchesMinimized] = useState(false);
   const [isStandingsOpen, setIsStandingsOpen] = useState(true);
   const [isStandingsMinimized, setIsStandingsMinimized] = useState(false);
-  const [focusedWindow, setFocusedWindow] = useState('matches'); // 'matches' | 'standings' | 'readme'
+  const [isThirdsOpen, setIsThirdsOpen] = useState(true);
+  const [isThirdsMinimized, setIsThirdsMinimized] = useState(false);
+  const [isBracketOpen, setIsBracketOpen] = useState(true);
+  const [isBracketMinimized, setIsBracketMinimized] = useState(false);
+  const [focusedWindow, setFocusedWindow] = useState('matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'readme'
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [showReadme, setShowReadme] = useState(false);
   const [selectedShortcut, setSelectedShortcut] = useState(null);
-  const [activeMobileTab, setActiveMobileTab] = useState('matches'); // 'matches' | 'standings' | 'settings'
+  const [activeMobileTab, setActiveMobileTab] = useState('matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'settings'
   const [winPositions, setWinPositions] = useState({
-    matches: { x: 140, y: 8 },
-    standings: { x: 720, y: 8 },
-    readme: { x: 280, y: 80 },
+    matches: { x: 40, y: 12 },
+    standings: { x: 620, y: 12 },
+    thirds: { x: 330, y: 64 },
+    bracket: { x: 190, y: 110 },
+    readme: { x: 280, y: 120 },
   });
+  
+  // Knockout stage simulation states
+  const [activeKnockoutRound, setActiveKnockoutRound] = useState('r32'); // 'r32' | 'r16' | 'quarter' | 'semi-final'
+  const [knockoutScores, setKnockoutScores] = useState({});
+  
   const dragStateRef = useRef(null);
 
   // Digital clock helper for taskbar tray
@@ -432,6 +694,12 @@ function App() {
     setIsMatchesMinimized(false);
     setIsStandingsOpen(true);
     setIsStandingsMinimized(false);
+    setIsThirdsOpen(true);
+    setIsThirdsMinimized(false);
+    setIsBracketOpen(true);
+    setIsBracketMinimized(false);
+    setKnockoutScores({});
+    setActiveKnockoutRound('r32');
     setFocusedWindow('matches');
     fetchData(); // reload fresh copy
     alert("Se ha reiniciado el software MundialStats a su estado original.");
@@ -514,24 +782,67 @@ function App() {
     customScoresRef.current = newCustomScores;
     setCustomScores(newCustomScores);
 
-    // Apply custom scores to matches state and recalculate standings
-    const updatedMatches = matches.map(m => {
-      if (m.id === matchId) {
-        return {
-          ...m,
-          home_team: { ...m.home_team, goals: team === 'home' ? newScore : m.home_team.goals },
-          away_team: { ...m.away_team, goals: team === 'away' ? newScore : m.away_team.goals }
-        };
-      }
-      return m;
-    });
+    // Reapply customization based on the updated custom scores
+    normalizeAndSetData(rawMatchesRef.current, fallback2026Teams, fallback2026Groups, fallback2026Stadia);
+  };
 
-    setMatches(updatedMatches);
-    setGroups(calculateGroupsStandings(updatedMatches, fallback2026Teams));
+  const handleResetScore = (matchId) => {
+    const currentCustom = customScoresRef.current;
+    const newCustomScores = { ...currentCustom };
+    delete newCustomScores[matchId];
+
+    customScoresRef.current = newCustomScores;
+    setCustomScores(newCustomScores);
+
+    // Reapply customization to remove simulation for this match
+    normalizeAndSetData(rawMatchesRef.current, fallback2026Teams, fallback2026Groups, fallback2026Stadia);
+  };
+
+  const handleKnockoutScoreChange = (matchId, team, val) => {
+    setKnockoutScores(prev => {
+      const prevScore = prev[matchId] || {};
+      const newScore = { ...prevScore };
+      if (val === null || isNaN(val)) {
+        delete newScore[team];
+      } else {
+        newScore[team] = val;
+      }
+      // If we cleared goals, reset penalties
+      if (newScore.home === undefined || newScore.away === undefined || newScore.home !== newScore.away) {
+        newScore.homePens = 0;
+        newScore.awayPens = 0;
+      }
+      return {
+        ...prev,
+        [matchId]: newScore
+      };
+    });
+  };
+
+  const handleKnockoutPensChange = (matchId, team, val) => {
+    setKnockoutScores(prev => {
+      const prevScore = prev[matchId] || {};
+      return {
+        ...prev,
+        [matchId]: {
+          ...prevScore,
+          [team === 'home' ? 'homePens' : 'awayPens']: val
+        }
+      };
+    });
+  };
+
+  const handleResetKnockoutMatch = (matchId) => {
+    setKnockoutScores(prev => {
+      const newScores = { ...prev };
+      delete newScores[matchId];
+      return newScores;
+    });
   };
 
   // Normalization layer to convert 2026 schema to unified display schema
   const normalizeAndSetData = (rawMatches, teamsList, groupsList, stadiaList) => {
+    rawMatchesRef.current = rawMatches;
     const normalizedMatches = normalizeMatchesData(rawMatches, teamsList, stadiaList);
     
     // Apply custom scores (only for live or scheduled matches, not completed ones)
@@ -540,6 +851,7 @@ function App() {
       if (currentCustom[m.id] && m.status !== 'completed') {
         return {
           ...m,
+          status: m.status === 'in_progress' ? 'in_progress' : 'simulated',
           home_team: { ...m.home_team, goals: currentCustom[m.id].home },
           away_team: { ...m.away_team, goals: currentCustom[m.id].away }
         };
@@ -748,6 +1060,9 @@ function App() {
               } else if (match.status === 'in_progress') {
                 statusLabel = 'En Vivo';
                 statusClass = 'live';
+              } else if (match.status === 'simulated') {
+                statusLabel = 'Simulado';
+                statusClass = 'simulated';
               }
 
               return (
@@ -766,17 +1081,18 @@ function App() {
                             {homeTeamEs}
                           </span>
                         </div>
-                        {match.status === 'in_progress' ? (
+                        {match.status !== 'completed' ? (
                           <input 
                             type="number" 
                             min="0"
                             className="win95-match-score-input"
-                            value={match.home_team.goals}
-                            onChange={(e) => handleScoreChange(match.id, 'home', parseInt(e.target.value) || 0)}
+                            value={customScores[match.id] !== undefined || match.status === 'in_progress' ? match.home_team.goals : ''}
+                            placeholder="-"
+                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                           />
                         ) : (
                           <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
-                            {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.home_team.goals : '-'}
+                            {match.home_team.goals}
                           </span>
                         )}
                       </div>
@@ -789,21 +1105,35 @@ function App() {
                             {awayTeamEs}
                           </span>
                         </div>
-                        {match.status === 'in_progress' ? (
+                        {match.status !== 'completed' ? (
                           <input 
                             type="number" 
                             min="0"
                             className="win95-match-score-input"
-                            value={match.away_team.goals}
-                            onChange={(e) => handleScoreChange(match.id, 'away', parseInt(e.target.value) || 0)}
+                            value={customScores[match.id] !== undefined || match.status === 'in_progress' ? match.away_team.goals : ''}
+                            placeholder="-"
+                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                           />
                         ) : (
                           <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
-                            {match.status !== 'future_unscheduled' && match.status !== 'future_scheduled' ? match.away_team.goals : '-'}
+                            {match.away_team.goals}
                           </span>
                         )}
                       </div>
                     </div>
+
+                    {customScores[match.id] !== undefined && (
+                      <div className="retro-match-reset-row" style={{ marginTop: '2px', marginBottom: '6px', textAlign: 'right' }}>
+                        <button 
+                          className="win95-btn reset-score-btn" 
+                          onClick={() => handleResetScore(match.id)}
+                          style={{ fontSize: '9px', padding: '1px 5px', height: '17px', minHeight: 'unset', minWidth: 'unset', verticalAlign: 'middle' }}
+                          title="Restablecer original"
+                        >
+                          Restablecer
+                        </button>
+                      </div>
+                    )}
 
                     {match.status === 'completed' && (match.home_team.penalties > 0 || match.away_team.penalties > 0) ? (
                       <div className="retro-match-penalties">
@@ -896,6 +1226,268 @@ function App() {
     );
   };
 
+  const renderThirdsContent = () => {
+    const thirdsList = calculateBestThirds(groups);
+
+    return (
+      <div className="win95-view-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <fieldset className="win95-groupbox filter-groupbox">
+          <legend>Criterios de Clasificación</legend>
+          <div style={{ fontSize: '11px', lineHeight: '1.4', padding: '2px' }}>
+            Los <strong>8 mejores terceros</strong> de la fase de grupos avanzan a Dieciseisavos de Final.
+            Se ordenan por: <strong>PTS</strong> ➔ <strong>DG</strong> ➔ <strong>GF</strong> ➔ <strong>G (Victorias)</strong>.
+          </div>
+        </fieldset>
+
+        <div className="win95-group-box-win" style={{ margin: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <div className="win95-group-card-title">
+            <span>Tabla General de Terceros Lugares</span>
+          </div>
+          <div className="win95-sunken table-viewport" style={{ flex: 1, overflowY: 'auto' }}>
+            <table className="retro-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '30px' }}>POS</th>
+                  <th style={{ width: '45px' }} className="text-center">Grp</th>
+                  <th>Equipo</th>
+                  <th className="text-center">PJ</th>
+                  <th className="text-center">G</th>
+                  <th className="text-center">E</th>
+                  <th className="text-center">P</th>
+                  <th className="text-center hide-mobile">GF</th>
+                  <th className="text-center hide-mobile">GC</th>
+                  <th className="text-center">DG</th>
+                  <th className="text-center text-bold">PTS</th>
+                  <th className="text-center" style={{ width: '80px' }}>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {thirdsList.map((team, idx) => {
+                  const isQualifying = idx < 8;
+                  const teamEs = getCountryNameEs(team.country, team.name);
+                  const flagUrl = getCountryFlagUrl(team.country, team.name);
+
+                  return (
+                    <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
+                      <td className="text-center text-bold idx-cell">
+                        {idx + 1}
+                      </td>
+                      <td className="text-center text-bold" style={{ opacity: 0.8 }}>
+                        {team.group}
+                      </td>
+                      <td>
+                        <div className="retro-table-team">
+                          <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
+                          <span className="retro-table-team-name" title={teamEs}>
+                            {teamEs}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-center">{team.games_played}</td>
+                      <td className="text-center">{team.wins}</td>
+                      <td className="text-center">{team.draws}</td>
+                      <td className="text-center">{team.losses}</td>
+                      <td className="text-center hide-mobile">{team.goals_for}</td>
+                      <td className="text-center hide-mobile">{team.goals_against}</td>
+                      <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>
+                        {team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}
+                      </td>
+                      <td className="text-center text-bold pts-cell">{team.group_points}</td>
+                      <td className="text-center">
+                        <span className={`retro-badge-status ${isQualifying ? 'qualify' : 'eliminate'}`} style={{
+                          fontWeight: 'bold',
+                          padding: '1px 4px',
+                          fontSize: '9px',
+                          border: '1px solid',
+                          borderColor: isQualifying ? 'var(--color-win-text)' : 'var(--color-loss-text)',
+                          color: isQualifying ? 'var(--color-win-text)' : 'var(--color-loss-text)',
+                          background: isQualifying ? 'rgba(0, 128, 0, 0.05)' : 'rgba(204, 0, 0, 0.05)'
+                        }}>
+                          {isQualifying ? 'Clasificado' : 'Eliminado'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBracketContent = () => {
+    const thirdsList = calculateBestThirds(groups);
+    const bracketMatches = resolveKnockoutBracket(groups, thirdsList, knockoutScores);
+
+    // Filter matches by current tab and sort by match ID
+    const activeMatches = Object.values(bracketMatches)
+      .filter(m => {
+        if (activeKnockoutRound === 'r32') return m.stage === 'r32';
+        if (activeKnockoutRound === 'r16') return m.stage === 'r16';
+        if (activeKnockoutRound === 'quarter') return m.stage === 'quarter';
+        if (activeKnockoutRound === 'final') return ['semi', 'third', 'final'].includes(m.stage);
+        return false;
+      })
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+    return (
+      <div className="win95-view-content bracket-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
+        {/* Retro Folder Tabs */}
+        <div className="win95-tabs-container" style={{ display: 'flex', gap: '2px', borderBottom: '2px solid var(--win-border-dark)', paddingBottom: '1px' }}>
+          <button 
+            className={`win95-tab-btn ${activeKnockoutRound === 'r32' ? 'active' : ''}`}
+            onClick={() => setActiveKnockoutRound('r32')}
+          >
+            Dieciseisavos (R32)
+          </button>
+          <button 
+            className={`win95-tab-btn ${activeKnockoutRound === 'r16' ? 'active' : ''}`}
+            onClick={() => setActiveKnockoutRound('r16')}
+          >
+            Octavos (R16)
+          </button>
+          <button 
+            className={`win95-tab-btn ${activeKnockoutRound === 'quarter' ? 'active' : ''}`}
+            onClick={() => setActiveKnockoutRound('quarter')}
+          >
+            Cuartos (R8)
+          </button>
+          <button 
+            className={`win95-tab-btn ${activeKnockoutRound === 'final' ? 'active' : ''}`}
+            onClick={() => setActiveKnockoutRound('final')}
+          >
+            Semis y Final
+          </button>
+        </div>
+
+        {/* Matches Grid */}
+        <div className="win95-bracket-grid" style={{ flex: 1, overflowY: 'auto', padding: '4px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px', alignContent: 'start' }}>
+          {activeMatches.map((m) => {
+            const homeFlag = getCountryFlagUrl(m.home.country, m.home.name);
+            const awayFlag = getCountryFlagUrl(m.away.country, m.away.name);
+            const isSimulated = m.homeScore !== null && m.awayScore !== null;
+            const isTied = isSimulated && m.homeScore === m.awayScore;
+            
+            // Spanish stage name
+            let stageEs = "Dieciseisavos";
+            if (m.stage === 'r16') stageEs = "Octavos";
+            else if (m.stage === 'quarter') stageEs = "Cuartos de Final";
+            else if (m.stage === 'semi') stageEs = "Semifinal";
+            else if (m.stage === 'third') stageEs = "3° Puesto";
+            else if (m.stage === 'final') stageEs = "Gran Final";
+
+            const disabledInputs = m.home.isPlaceholder || m.away.isPlaceholder;
+
+            return (
+              <div key={m.id} className={`win95-match-card-win ${isSimulated ? 'simulated' : ''}`} style={{ margin: 0 }}>
+                <div className="win95-match-card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Match #{m.id} - {stageEs}</span>
+                  {isSimulated && (
+                    <span className="match-badge-retro simulated" style={{ fontSize: '8px', padding: '1px 3px' }}>Simulado</span>
+                  )}
+                </div>
+                <div className="win95-match-card-body" style={{ padding: '6px' }}>
+                  <div className="retro-team-rows">
+                    {/* Home Team Row */}
+                    <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div className="retro-team-name-flag" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                        <img src={homeFlag} alt={m.home.label} className="retro-flag" style={{ width: '16px', height: '11px', objectFit: 'cover' }} />
+                        <span 
+                          className={`retro-name-txt ${m.winner && m.winner.country === m.home.country ? 'winner-bold' : ''}`} 
+                          style={{ fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', color: m.home.isPlaceholder ? '#888' : 'inherit' }}
+                          title={m.home.label}
+                        >
+                          {m.home.label}
+                        </span>
+                      </div>
+                      <input 
+                        type="number" 
+                        min="0"
+                        className="win95-match-score-input"
+                        style={{ width: '30px', textAlign: 'center', height: '18px', padding: 0 }}
+                        value={m.homeScore !== null ? m.homeScore : ''}
+                        disabled={disabledInputs}
+                        placeholder={disabledInputs ? '-' : ''}
+                        onChange={(e) => handleKnockoutScoreChange(m.id, 'home', e.target.value === '' ? null : parseInt(e.target.value))}
+                      />
+                    </div>
+
+                    {/* Away Team Row */}
+                    <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div className="retro-team-name-flag" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                        <img src={awayFlag} alt={m.away.label} className="retro-flag" style={{ width: '16px', height: '11px', objectFit: 'cover' }} />
+                        <span 
+                          className={`retro-name-txt ${m.winner && m.winner.country === m.away.country ? 'winner-bold' : ''}`} 
+                          style={{ fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', color: m.away.isPlaceholder ? '#888' : 'inherit' }}
+                          title={m.away.label}
+                        >
+                          {m.away.label}
+                        </span>
+                      </div>
+                      <input 
+                        type="number" 
+                        min="0"
+                        className="win95-match-score-input"
+                        style={{ width: '30px', textAlign: 'center', height: '18px', padding: 0 }}
+                        value={m.awayScore !== null ? m.awayScore : ''}
+                        disabled={disabledInputs}
+                        placeholder={disabledInputs ? '-' : ''}
+                        onChange={(e) => handleKnockoutScoreChange(m.id, 'away', e.target.value === '' ? null : parseInt(e.target.value))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Penalty Row if Tied */}
+                  {isTied && (
+                    <div className="retro-match-penalties-input-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed #ccc', fontSize: '10px' }}>
+                      <span>Penaltis:</span>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <input 
+                          type="number" 
+                          min="0"
+                          className="win95-match-pens-input"
+                          style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
+                          value={m.homePens || ''}
+                          placeholder="P"
+                          onChange={(e) => handleKnockoutPensChange(m.id, 'home', parseInt(e.target.value) || 0)}
+                        />
+                        <span>-</span>
+                        <input 
+                          type="number" 
+                          min="0"
+                          className="win95-match-pens-input"
+                          style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
+                          value={m.awayPens || ''}
+                          placeholder="P"
+                          onChange={(e) => handleKnockoutPensChange(m.id, 'away', parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reset Button */}
+                  {isSimulated && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                      <button 
+                        className="win95-btn reset-score-btn" 
+                        onClick={() => handleResetKnockoutMatch(m.id)}
+                        style={{ fontSize: '9px', padding: '1px 5px', height: '17px', minHeight: 'unset', minWidth: 'unset' }}
+                      >
+                        Restablecer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const hasLiveMatches = matches.some(m => m.status === 'in_progress');
   return (
     <div className={`win95-app-container theme-${theme}`}>
@@ -918,6 +1510,20 @@ function App() {
             >
               <span className="shortcut-icon">📊</span>
               <span className="shortcut-label">Posiciones</span>
+            </div>
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'thirds' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('thirds', () => { setIsThirdsOpen(true); setIsThirdsMinimized(false); setFocusedWindow('thirds'); })}
+            >
+              <span className="shortcut-icon">🏆</span>
+              <span className="shortcut-label">Mejores Terceros</span>
+            </div>
+            <div 
+              className={`desktop-shortcut ${selectedShortcut === 'bracket' ? 'selected' : ''}`}
+              onClick={() => handleShortcutClick('bracket', () => { setIsBracketOpen(true); setIsBracketMinimized(false); setFocusedWindow('bracket'); })}
+            >
+              <span className="shortcut-icon">🏅</span>
+              <span className="shortcut-label">Cuadro Eliminatorio</span>
             </div>
             <div 
               className={`desktop-shortcut ${selectedShortcut === 'reset' ? 'selected' : ''}`}
@@ -997,6 +1603,12 @@ function App() {
                         <div className="win95-dropdown-menu">
                           <button className="win95-dropdown-item" onClick={() => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); closeMenu(); }}>
                             Mostrar Tabla de <u>P</u>osiciones
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsThirdsOpen(true); setIsThirdsMinimized(false); setFocusedWindow('thirds'); closeMenu(); }}>
+                            Mostrar Mejores <u>T</u>erceros
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsBracketOpen(true); setIsBracketMinimized(false); setFocusedWindow('bracket'); closeMenu(); }}>
+                            Mostrar Cuadro <u>E</u>liminatorio
                           </button>
                           <div className="win95-dropdown-separator"></div>
                           <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
@@ -1136,6 +1748,12 @@ function App() {
                           <button className="win95-dropdown-item" onClick={() => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); closeMenu(); }}>
                             Mostrar <u>P</u>artidos
                           </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsThirdsOpen(true); setIsThirdsMinimized(false); setFocusedWindow('thirds'); closeMenu(); }}>
+                            Mostrar Mejores <u>T</u>erceros
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsBracketOpen(true); setIsBracketMinimized(false); setFocusedWindow('bracket'); closeMenu(); }}>
+                            Mostrar Cuadro <u>E</u>liminatorio
+                          </button>
                           <div className="win95-dropdown-separator"></div>
                           <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
                             <u>A</u>ctualizar datos (Fetch)
@@ -1191,6 +1809,232 @@ function App() {
                   <div className="win95-status-bar">
                     <div className="status-bar-pane pane-desc">
                       Tablas de Posiciones: Grupos A - L
+                    </div>
+                    <div className="status-bar-pane pane-time">
+                      Mundial 2026
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mejores Terceros Window */}
+              {isThirdsOpen && !isThirdsMinimized && (
+                <div 
+                  className={`win95-window desktop-window thirds-window ${focusedWindow === 'thirds' ? 'focused' : 'inactive'}`}
+                  onClick={() => setFocusedWindow('thirds')}
+                  style={{ zIndex: focusedWindow === 'thirds' ? 100 : 50, left: winPositions.thirds.x, top: winPositions.thirds.y }}
+                >
+                  {/* Title Bar */}
+                  <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('thirds', e)} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <div className="win95-title-text">
+                      <span className="win95-title-icon">🏆</span>
+                      <span>Mejores Terceros - MundialStats 2026</span>
+                    </div>
+                    <div className="win95-title-buttons">
+                      <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsThirdsMinimized(true); }}>_</button>
+                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsThirdsOpen(false); }}>X</button>
+                    </div>
+                  </div>
+
+                  {/* Menu Bar */}
+                  <div className="win95-menu-bar">
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'archivo_t' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_t'); }}>
+                        <u>A</u>rchivo
+                      </button>
+                      {activeMenu === 'archivo_t' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
+                            <u>S</u>alir (Reiniciar)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ver_t' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_t'); }}>
+                        <u>V</u>er
+                      </button>
+                      {activeMenu === 'ver_t' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); closeMenu(); }}>
+                            Mostrar <u>P</u>artidos
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); closeMenu(); }}>
+                            Mostrar Tabla de <u>P</u>osiciones
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsBracketOpen(true); setIsBracketMinimized(false); setFocusedWindow('bracket'); closeMenu(); }}>
+                            Mostrar Cuadro <u>E</u>liminatorio
+                          </button>
+                          <div className="win95-dropdown-separator"></div>
+                          <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
+                            <u>A</u>ctualizar datos (Fetch)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'tema_t' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_t'); }}>
+                        <u>T</u>ema
+                      </button>
+                      {activeMenu === 'tema_t' && (
+                        <div className="win95-dropdown-menu">
+                          <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
+                            {theme === 'win95' && '✓ '}Windows 95 / 98
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
+                            {theme === 'winxp' && '✓ '}Windows XP (Luna)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
+                            {theme === 'win7' && '✓ '}Windows 7 (Aero)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
+                            {theme === 'win10' && '✓ '}Windows 10
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ayuda_t' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_t'); }}>
+                        A<u>y</u>uda
+                      </button>
+                      {activeMenu === 'ayuda_t' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
+                            <u>A</u>cerca de MundialStats...
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Window Body */}
+                  <div className="win95-window-body" style={{ minHeight: 0 }}>
+                    <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                      {renderThirdsContent()}
+                    </div>
+                  </div>
+
+                  {/* Windows Status Bar */}
+                  <div className="win95-status-bar">
+                    <div className="status-bar-pane pane-desc">
+                      Mejores terceros: Clasifican los 8 mejores
+                    </div>
+                    <div className="status-bar-pane pane-time">
+                      Mundial 2026
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Cuadro Eliminatorio Window */}
+              {isBracketOpen && !isBracketMinimized && (
+                <div 
+                  className={`win95-window desktop-window bracket-window ${focusedWindow === 'bracket' ? 'focused' : 'inactive'}`}
+                  onClick={() => setFocusedWindow('bracket')}
+                  style={{ zIndex: focusedWindow === 'bracket' ? 100 : 50, left: winPositions.bracket.x, top: winPositions.bracket.y }}
+                >
+                  {/* Title Bar */}
+                  <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('bracket', e)} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <div className="win95-title-text">
+                      <span className="win95-title-icon">🏅</span>
+                      <span>Cuadro Eliminatorio - MundialStats 2026</span>
+                    </div>
+                    <div className="win95-title-buttons">
+                      <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsBracketMinimized(true); }}>_</button>
+                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsBracketOpen(false); }}>X</button>
+                    </div>
+                  </div>
+
+                  {/* Menu Bar */}
+                  <div className="win95-menu-bar">
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'archivo_b' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('archivo_b'); }}>
+                        <u>A</u>rchivo
+                      </button>
+                      {activeMenu === 'archivo_b' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
+                            <u>S</u>alir (Reiniciar)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ver_b' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ver_b'); }}>
+                        <u>V</u>er
+                      </button>
+                      {activeMenu === 'ver_b' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setIsMatchesOpen(true); setIsMatchesMinimized(false); setFocusedWindow('matches'); closeMenu(); }}>
+                            Mostrar <u>P</u>artidos
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsStandingsOpen(true); setIsStandingsMinimized(false); setFocusedWindow('standings'); closeMenu(); }}>
+                            Mostrar Tabla de <u>P</u>osiciones
+                          </button>
+                          <button className="win95-dropdown-item" onClick={() => { setIsThirdsOpen(true); setIsThirdsMinimized(false); setFocusedWindow('thirds'); closeMenu(); }}>
+                            Mostrar Mejores <u>T</u>erceros
+                          </button>
+                          <div className="win95-dropdown-separator"></div>
+                          <button className="win95-dropdown-item" onClick={() => { fetchData(); closeMenu(); }}>
+                            <u>A</u>ctualizar datos (Fetch)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'tema_b' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('tema_b'); }}>
+                        <u>T</u>ema
+                      </button>
+                      {activeMenu === 'tema_b' && (
+                        <div className="win95-dropdown-menu">
+                          <button className={`win95-dropdown-item ${theme === 'win95' ? 'checked' : ''}`} onClick={() => { toggleTheme('win95'); closeMenu(); }}>
+                            {theme === 'win95' && '✓ '}Windows 95 / 98
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'winxp' ? 'checked' : ''}`} onClick={() => { toggleTheme('winxp'); closeMenu(); }}>
+                            {theme === 'winxp' && '✓ '}Windows XP (Luna)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
+                            {theme === 'win7' && '✓ '}Windows 7 (Aero)
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
+                            {theme === 'win10' && '✓ '}Windows 10
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="win95-menu-item-wrapper">
+                      <button className={`win95-menu-btn ${activeMenu === 'ayuda_b' ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); toggleMenu('ayuda_b'); }}>
+                        A<u>y</u>uda
+                      </button>
+                      {activeMenu === 'ayuda_b' && (
+                        <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={() => { setShowAbout(true); closeMenu(); }}>
+                            <u>A</u>cerca de MundialStats...
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Window Body */}
+                  <div className="win95-window-body" style={{ minHeight: 0 }}>
+                    <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                      {renderBracketContent()}
+                    </div>
+                  </div>
+
+                  {/* Windows Status Bar */}
+                  <div className="win95-status-bar">
+                    <div className="status-bar-pane pane-desc">
+                      Fase Eliminatoria: Dieciseisavos a Final
                     </div>
                     <div className="status-bar-pane pane-time">
                       Mundial 2026
@@ -1294,6 +2138,44 @@ Instrucciones:
                 <span>Posiciones</span>
               </button>
             )}
+
+            {isThirdsOpen && (
+              <button 
+                className={`taskbar-item ${(!isThirdsMinimized && focusedWindow === 'thirds') ? 'active' : ''}`}
+                onClick={() => {
+                  if (isThirdsMinimized) {
+                    setIsThirdsMinimized(false);
+                    setFocusedWindow('thirds');
+                  } else if (focusedWindow === 'thirds') {
+                    setIsThirdsMinimized(true);
+                  } else {
+                    setFocusedWindow('thirds');
+                  }
+                }}
+              >
+                <span className="taskbar-icon">🏆</span>
+                <span>Mejores Terceros</span>
+              </button>
+            )}
+
+            {isBracketOpen && (
+              <button 
+                className={`taskbar-item ${(!isBracketMinimized && focusedWindow === 'bracket') ? 'active' : ''}`}
+                onClick={() => {
+                  if (isBracketMinimized) {
+                    setIsBracketMinimized(false);
+                    setFocusedWindow('bracket');
+                  } else if (focusedWindow === 'bracket') {
+                    setIsBracketMinimized(true);
+                  } else {
+                    setFocusedWindow('bracket');
+                  }
+                }}
+              >
+                <span className="taskbar-icon">🏅</span>
+                <span>Cuadro Eliminatorio</span>
+              </button>
+            )}
           </div>
 
           {/* System Tray */}
@@ -1342,6 +2224,30 @@ Instrucciones:
               >
                 <span className="item-icon">📊</span>
                 <span className="item-label">Tabla de Posiciones</span>
+              </button>
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  setIsThirdsOpen(true);
+                  setIsThirdsMinimized(false);
+                  setFocusedWindow('thirds');
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">🏆</span>
+                <span className="item-label">Mejores Terceros</span>
+              </button>
+              <button 
+                className="start-menu-item"
+                onClick={() => {
+                  setIsBracketOpen(true);
+                  setIsBracketMinimized(false);
+                  setFocusedWindow('bracket');
+                  setIsStartMenuOpen(false);
+                }}
+              >
+                <span className="item-icon">🏅</span>
+                <span className="item-label">Cuadro Eliminatorio</span>
               </button>
               
               {/* Submenu for Themes */}
@@ -1481,6 +2387,18 @@ Instrucciones:
                 </div>
               )}
 
+              {activeMobileTab === 'thirds' && (
+                <div className="mobile-tab-content thirds-tab">
+                  {renderThirdsContent()}
+                </div>
+              )}
+
+              {activeMobileTab === 'bracket' && (
+                <div className="mobile-tab-content bracket-tab">
+                  {renderBracketContent()}
+                </div>
+              )}
+
               {activeMobileTab === 'settings' && (
                 <div className="mobile-tab-content settings-tab">
                   <div className="mobile-settings-page">
@@ -1537,6 +2455,14 @@ Instrucciones:
               <span className="nav-icon">🏆</span>
               <span className="nav-label">Posiciones</span>
             </button>
+            <button className={`nav-android-item ${activeMobileTab === 'thirds' ? 'active' : ''}`} onClick={() => setActiveMobileTab('thirds')}>
+              <span className="nav-icon">⭐</span>
+              <span className="nav-label">Terceros</span>
+            </button>
+            <button className={`nav-android-item ${activeMobileTab === 'bracket' ? 'active' : ''}`} onClick={() => setActiveMobileTab('bracket')}>
+              <span className="nav-icon">🏅</span>
+              <span className="nav-label">Cuadro</span>
+            </button>
             <button className={`nav-android-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
               <span className="nav-icon">⚙️</span>
               <span className="nav-label">Ajustes</span>
@@ -1553,6 +2479,14 @@ Instrucciones:
               <span className="nav-icon">🏆</span>
               <span className="nav-label">Tablas</span>
             </button>
+            <button className={`nav-ios-item ${activeMobileTab === 'thirds' ? 'active' : ''}`} onClick={() => setActiveMobileTab('thirds')}>
+              <span className="nav-icon">⭐</span>
+              <span className="nav-label">Terceros</span>
+            </button>
+            <button className={`nav-ios-item ${activeMobileTab === 'bracket' ? 'active' : ''}`} onClick={() => setActiveMobileTab('bracket')}>
+              <span className="nav-icon">🏅</span>
+              <span className="nav-label">Cuadro</span>
+            </button>
             <button className={`nav-ios-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
               <span className="nav-icon">⚙️</span>
               <span className="nav-label">Ajustes</span>
@@ -1566,6 +2500,12 @@ Instrucciones:
             </button>
             <button className={`nav-winmobile-item ${activeMobileTab === 'standings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('standings')}>
               Posiciones
+            </button>
+            <button className={`nav-winmobile-item ${activeMobileTab === 'thirds' ? 'active' : ''}`} onClick={() => setActiveMobileTab('thirds')}>
+              Terceros
+            </button>
+            <button className={`nav-winmobile-item ${activeMobileTab === 'bracket' ? 'active' : ''}`} onClick={() => setActiveMobileTab('bracket')}>
+              Cuadro
             </button>
             <button className={`nav-winmobile-item ${activeMobileTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveMobileTab('settings')}>
               Herram.
