@@ -1,0 +1,247 @@
+.theme-android-dark {
+  /* Modern Android Dark Theme (Material 3) */
+  --desktop-bg: #121212; 
+  --win-bg: #1e1f22; 
+  --win-fg: #e3e3e3;
+  --win-border-light: transparent;
+  --win-border-dark: transparent;
+  --win-border-darkest: #a8c7fa; /* Material Primary Blue Dark */
+  
+  --title-bg-start: #1e1f22;
+  --title-bg-end: #1e1f22;
+  --title-text: #e3e3e3;
+  
+  --input-bg: #2b2d31;
+  --input-fg: #e3e3e3;
+  
+  --btn-bg: #4a4458; /* Material 3 Secondary Container Dark */
+  --btn-fg: #e8def8; /* On Secondary Container Dark */
+  
+  --color-live-text: #f2b8b5; /* Material Error Dark */
+  --color-live-bg: #8c1d18;
+  --color-completed-text: #81c995;
+  --color-win-text: #81c995;
+  --color-loss-text: #f2b8b5;
+  
+  --table-header-bg: #121212;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #444746;
+}
+
+/* OS Specific refinements for Android Dark Desktop */
+.theme-android-dark .win95-window, .theme-android-dark .desktop-window { 
+  border-radius: 16px !important;
+  border: none !important; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4) !important; 
+  background-color: var(--win-bg) !important;
+}
+.theme-android-dark .win95-title-bar { 
+  border-radius: 16px 16px 0 0 !important;
+  border-bottom: none !important; 
+  background: transparent !important;
+  font-weight: 500; 
+  font-family: 'Roboto', 'Segoe UI', sans-serif; 
+  padding: 16px !important;
+}
+.theme-android-dark .win95-title-text {
+  font-size: 18px;
+  color: #e3e3e3;
+}
+.theme-android-dark .win95-btn {
+  border-radius: 100px !important; /* Fully rounded pill buttons for M3 */
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  padding: 10px 24px !important;
+  transition: background-color 0.2s ease;
+}
+.theme-android-dark .win95-btn.default-btn {
+  background: #a8c7fa !important; /* Primary Dark */
+  color: #062e6f !important; /* On Primary Dark */
+}
+.theme-android-dark .retro-badge {
+  border-radius: 8px !important;
+  border: none !important;
+  font-weight: 500 !important;
+  padding: 4px 8px !important;
+}
+
+/* Android Top Status Bar (Dark) */
+.status-bar-android {
+  background: #121212;
+  color: #e3e3e3;
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  height: 24px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.status-bar-android .notif-icon {
+  margin-right: 8px;
+}
+
+/* Android Header (Dark) */
+.header-android {
+  background: #1e1f22;
+  height: 56px;
+  color: #e3e3e3;
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+}
+.header-android h1 {
+  font-size: 20px;
+  font-weight: 400;
+  flex: 1;
+  text-align: left;
+}
+.header-android .android-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #c4c7c5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-android .android-action-btn:active {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Android Bottom Nav (Dark) */
+.nav-android {
+  background: #1e1f22;
+  height: 80px; 
+  box-shadow: 0 -1px 0 rgba(255,255,255,0.05);
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  display: flex;
+}
+.nav-android-item {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #c4c7c5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  outline: none;
+}
+.nav-android-item .nav-icon {
+  font-size: 24px;
+  padding: 4px 16px;
+  border-radius: 16px;
+  transition: background-color 0.2s ease;
+}
+.nav-android-item .nav-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+.nav-android-item.active {
+  color: #e3e3e3;
+}
+.nav-android-item.active .nav-icon {
+  background-color: #004a77; /* Primary Container Dark */
+  color: #c2e7ff; /* On Primary Container Dark */
+}
+
+/* Mobile Layout Overrides for Android Dark */
+.theme-android-dark .win95-mobile-shell {
+  background: #121212;
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+}
+.theme-android-dark .win95-mobile-shell .win95-match-card-win {
+  background: #1e1f22 !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4) !important;
+  margin-bottom: 12px !important;
+  padding: 16px !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-match-card-title {
+  border-bottom: none !important;
+  color: #a8c7fa !important;
+  font-size: 14px !important;
+  font-weight: 500;
+  margin-bottom: 12px !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-name-txt {
+  font-size: 16px !important;
+  color: #e3e3e3 !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-score-txt {
+  color: #e3e3e3 !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-match-score-input {
+  background: #2b2d31 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  text-align: center;
+  padding: 8px !important;
+  font-weight: 500;
+  color: #e3e3e3 !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-match-details {
+  border-top: 1px solid rgba(255,255,255,0.05) !important;
+  padding-top: 12px !important;
+  margin-top: 12px !important;
+  color: #c4c7c5 !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-groupbox {
+  background: #1e1f22 !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-groupbox legend {
+  color: #a8c7fa !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 0 !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-input-control,
+.theme-android-dark .win95-mobile-shell .win95-select-control {
+  background: #2b2d31 !important;
+  color: #e3e3e3 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-group-box-win {
+  background: #1e1f22 !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+.theme-android-dark .win95-mobile-shell .win95-group-card-title {
+  color: #e3e3e3 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  padding-bottom: 8px !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-table {
+  color: #e3e3e3 !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-table th {
+  border-bottom: 2px solid rgba(255,255,255,0.05) !important;
+  color: #c4c7c5 !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-table td {
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+.theme-android-dark .win95-mobile-shell .retro-qualifying {
+  background: rgba(129, 201, 149, 0.1) !important;
+}

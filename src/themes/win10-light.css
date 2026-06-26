@@ -1,0 +1,31 @@
+.theme-win10-light {
+  /* Windows 10 Light Theme */
+  --desktop-bg: #005a9e; /* Win10 Dark Blue */
+  --win-bg: #ffffff; /* Windows 10 Light Gray/White */
+  --win-fg: #000000;
+  --win-border-light: #cccccc;
+  --win-border-dark: #aaaaaa;
+  --win-border-darkest: #0078d7; /* Win10 Accent Blue */
+  --title-bg-start: #ffffff;
+  --title-bg-end: #ffffff;
+  --title-text: #000000;
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+  --btn-bg: #e1e1e1;
+  --btn-fg: #000000;
+  --color-live-text: #e81123;
+  --color-live-bg: #fde7e9;
+  --color-completed-text: #107c41;
+  --color-win-text: #107c41;
+  --color-loss-text: #e81123;
+  --table-header-bg: #f0f0f0;
+  --scrollbar-track: #f0f0f0;
+  --scrollbar-thumb: #cdcdcd;
+}
+
+/* OS Specific refinements */
+.theme-win10-light .win95-window, .theme-win10-light .desktop-window { 
+  border: 1px solid var(--win-border-darkest) !important; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; 
+}
+.theme-win10-light .win95-title-bar { border-bottom: none !important; }

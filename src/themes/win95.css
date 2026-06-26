@@ -1,0 +1,36 @@
+.theme-win95 {
+  /* Desktop Background */
+  --desktop-bg: #008080; /* Classic Teal */
+
+  /* Panels & Windows Colors */
+  --win-bg: #c0c0c0; /* Standard Win95 gray */
+  --win-fg: #000000;
+  --win-border-light: #ffffff;
+  --win-border-dark: #808080;
+  --win-border-darkest: #000000;
+
+  /* Title Bars */
+  --title-bg-start: #000080; /* Classic Dark Navy */
+  --title-bg-end: #1084d0;
+  --title-text: #ffffff;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #c0c0c0;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #cc0000;
+  --color-live-bg: #ffffd0;
+  --color-completed-text: #006600;
+  --color-win-text: #008000;
+  --color-loss-text: #cc0000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #c0c0c0;
+  --scrollbar-track: #dfdfdf;
+  --scrollbar-thumb: #c0c0c0;
+}

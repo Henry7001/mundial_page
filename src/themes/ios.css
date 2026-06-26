@@ -1,0 +1,258 @@
+.theme-ios {
+  /* Modern iOS Theme */
+  --desktop-bg: #f2f2f7; /* iOS System Gray 6 */
+  --win-bg: rgba(255, 255, 255, 0.7); /* Translucent white */
+  --win-fg: #000000;
+  --win-border-light: rgba(255, 255, 255, 0.5);
+  --win-border-dark: rgba(0, 0, 0, 0.05);
+  --win-border-darkest: #007aff; /* iOS Blue */
+  
+  --title-bg-start: rgba(255, 255, 255, 0.85); 
+  --title-bg-end: rgba(255, 255, 255, 0.85);
+  --title-text: #000000;
+  
+  --input-bg: #e3e3e8; /* iOS Gray 5 */
+  --input-fg: #000000;
+  
+  --btn-bg: #007aff;
+  --btn-fg: #ffffff;
+  
+  --color-live-text: #ff3b30; /* iOS Red */
+  --color-live-bg: #ffeceb;
+  --color-completed-text: #34c759; /* iOS Green */
+  --color-win-text: #34c759;
+  --color-loss-text: #ff3b30;
+  
+  --table-header-bg: #f2f2f7;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0,0,0,0.3);
+}
+
+/* OS Specific refinements for Modern iOS */
+.theme-ios .win95-window, .theme-ios .desktop-window { 
+  border-radius: 14px !important; 
+  backdrop-filter: saturate(180%) blur(20px); 
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important; 
+  border: 0.5px solid rgba(0,0,0,0.1) !important; 
+  background-color: var(--win-bg) !important;
+}
+
+.theme-ios .win95-title-bar { 
+  border-radius: 14px 14px 0 0 !important; 
+  background: transparent !important; 
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important; 
+  color: #000 !important; 
+  text-align: center; 
+  padding: 12px 10px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.theme-ios .win95-title-text { 
+  justify-content: center; 
+  width: 100%; 
+  font-weight: 600; 
+  font-size: 17px; 
+}
+
+.theme-ios .win95-btn {
+  border-radius: 10px !important;
+  border: none !important;
+  background: #007aff !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  padding: 8px 16px !important;
+}
+
+.theme-ios .win95-btn.default-btn {
+  background: #0056b3 !important;
+}
+
+.theme-ios .retro-badge {
+  border-radius: 6px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 2px 6px !important;
+}
+
+/* Top Status Bar */
+.status-bar-ios {
+  background: transparent;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  height: 24px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.status-bar-ios .carrier-text {
+  font-weight: 600;
+  margin-right: 4px;
+}
+.status-bar-ios .battery-icon {
+  margin-left: 2px;
+}
+
+/* Header */
+.header-ios {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  height: 50px;
+  color: #000000;
+  border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+}
+.header-ios h1 {
+  font-size: 17px;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+.header-ios .ios-nav-btn-left,
+.header-ios .ios-nav-btn-right {
+  font-family: inherit;
+  font-size: 17px;
+  color: #007aff;
+  background: transparent;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+  outline: none;
+}
+.header-ios .ios-nav-btn-left:active,
+.header-ios .ios-nav-btn-right:active {
+  opacity: 0.5;
+}
+
+/* Bottom Nav */
+.nav-ios {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  height: 60px;
+  border-top: 0.5px solid rgba(0,0,0,0.15);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+}
+.nav-ios-item {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  outline: none;
+}
+.nav-ios-item .nav-icon {
+  font-size: 24px;
+}
+.nav-ios-item .nav-label {
+  font-size: 10px;
+  font-weight: 500;
+}
+.nav-ios-item:active, .nav-ios-item.active {
+  color: #007aff;
+}
+
+/* Base Mobile Shell in iOS */
+.theme-ios .win95-mobile-shell {
+  background: #f2f2f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.theme-ios .win95-mobile-shell .win95-match-card-win {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  margin-bottom: 12px !important;
+  padding: 12px !important;
+}
+.theme-ios .win95-mobile-shell .win95-match-card-title {
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
+  color: #8e8e93 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  margin-bottom: 8px !important;
+  padding-bottom: 8px !important;
+}
+.theme-ios .win95-mobile-shell .retro-name-txt {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #000 !important;
+}
+.theme-ios .win95-mobile-shell .retro-score-txt {
+  color: #000 !important;
+}
+.theme-ios .win95-mobile-shell .win95-match-score-input {
+  background: #f2f2f7 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+.theme-ios .win95-mobile-shell .retro-match-details {
+  border-top: 0.5px solid rgba(0,0,0,0.1) !important;
+}
+.theme-ios .win95-mobile-shell .win95-groupbox {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+.theme-ios .win95-mobile-shell .win95-groupbox legend {
+  display: block !important;
+  float: none !important;
+  width: auto !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  color: #8e8e93 !important;
+  padding: 0 0 8px 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+.theme-ios .win95-mobile-shell .win95-input-control,
+.theme-ios .win95-mobile-shell .win95-select-control {
+  background: #f2f2f7 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  color: #000 !important;
+}
+.theme-ios .win95-mobile-shell .win95-group-box-win {
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+.theme-ios .win95-mobile-shell .win95-group-card-title {
+  color: #000 !important;
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
+}
+.theme-ios .win95-mobile-shell .retro-table {
+  color: #000 !important;
+}
+.theme-ios .win95-mobile-shell .retro-table th {
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
+  color: #8e8e93 !important;
+  text-transform: uppercase;
+}
+.theme-ios .win95-mobile-shell .retro-table td {
+  border-bottom: 0.5px solid rgba(0,0,0,0.1) !important;
+}
+.theme-ios .win95-mobile-shell .retro-qualifying {
+  background: rgba(52, 199, 89, 0.1) !important;
+}

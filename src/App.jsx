@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Trophy, 
   Search, 
@@ -617,14 +617,25 @@ function App() {
   const [showPossibleMatches, setShowPossibleMatches] = useState(true);
 
   // State and ref for interactive score edits
-  const [customScores, setCustomScores] = useState({});
-  const customScoresRef = useRef({});
+  const [customScores, setCustomScores] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('sim')) return JSON.parse(atob(urlParams.get('sim')));
+      const saved = localStorage.getItem('mundialstats-customScores');
+      return saved ? JSON.parse(saved) : {};
+    } catch(e) { return {}; }
+  });
+  const customScoresRef = useRef(customScores);
   const rawMatchesRef = useRef([]);
+
+  useEffect(() => {
+    localStorage.setItem('mundialstats-customScores', JSON.stringify(customScores));
+  }, [customScores]);
 
   // Theme selection state (Windows retro versions)
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('mundialstats-theme');
-    const validThemes = ['win95', 'winxp', 'win7', 'win10'];
+    const validThemes = ['win95', 'winxp', 'win7', 'win10-light', 'win10-dark', 'ios', 'android-light', 'android-dark'];
     return validThemes.includes(saved) ? saved : 'win95';
   });
 
@@ -658,7 +669,18 @@ function App() {
   
   // Knockout stage simulation states
   const [activeKnockoutRound, setActiveKnockoutRound] = useState('r32'); // 'r32' | 'r16' | 'quarter' | 'semi-final'
-  const [knockoutScores, setKnockoutScores] = useState({});
+  const [knockoutScores, setKnockoutScores] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('ko_sim')) return JSON.parse(atob(urlParams.get('ko_sim')));
+      const saved = localStorage.getItem('mundialstats-knockoutScores');
+      return saved ? JSON.parse(saved) : {};
+    } catch(e) { return {}; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mundialstats-knockoutScores', JSON.stringify(knockoutScores));
+  }, [knockoutScores]);
   
   const dragStateRef = useRef(null);
 
@@ -707,8 +729,26 @@ function App() {
     setActiveKnockoutRound('r32');
     setFocusedWindow('matches');
     setShowPossibleMatches(true);
+    window.history.replaceState({}, '', window.location.pathname);
     fetchData(); // reload fresh copy
     alert("Se ha reiniciado el software MundialStats a su estado original.");
+  };
+
+  const handleShare = () => {
+    try {
+      const url = new URL(window.location.origin + window.location.pathname);
+      if (Object.keys(customScores).length > 0) {
+        url.searchParams.set('sim', btoa(JSON.stringify(customScores)));
+      }
+      if (Object.keys(knockoutScores).length > 0) {
+        url.searchParams.set('ko_sim', btoa(JSON.stringify(knockoutScores)));
+      }
+      navigator.clipboard.writeText(url.toString());
+      alert("¡Enlace copiado al portapapeles! Puedes compartirlo para que vean tu simulación.");
+    } catch (err) {
+      alert("Error al generar el enlace.");
+    }
+    setActiveMenu(null);
   };
 
   // Close menus when clicking outside
@@ -987,6 +1027,10 @@ function App() {
     }
   };
 
+  // Memoized derived states for performance
+  const memoizedThirdsList = useMemo(() => calculateBestThirds(groups), [groups]);
+  const memoizedBracketMatches = useMemo(() => resolveKnockoutBracket(groups, memoizedThirdsList, knockoutScores, showPossibleMatches), [groups, memoizedThirdsList, knockoutScores, showPossibleMatches]);
+
   const renderMatchesContent = () => {
     return (
       <div className="win95-view-content">
@@ -1233,7 +1277,7 @@ function App() {
   };
 
   const renderThirdsContent = () => {
-    const thirdsList = calculateBestThirds(groups);
+    const thirdsList = memoizedThirdsList;
 
     return (
       <div className="win95-view-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -1324,8 +1368,8 @@ function App() {
   };
 
   const renderBracketContent = () => {
-    const thirdsList = calculateBestThirds(groups);
-    const bracketMatches = resolveKnockoutBracket(groups, thirdsList, knockoutScores, showPossibleMatches);
+    const thirdsList = memoizedThirdsList;
+    const bracketMatches = memoizedBracketMatches;
 
     // Filter matches by current tab and sort by match ID
     const activeMatches = Object.values(bracketMatches)
@@ -1604,6 +1648,10 @@ function App() {
                       </button>
                       {activeMenu === 'archivo_m' && (
                         <div className="win95-dropdown-menu">
+                          <button className="win95-dropdown-item" onClick={handleShare}>
+                            <u>C</u>ompartir Simulación
+                          </button>
+                          <div className="win95-dropdown-separator"></div>
                           <button className="win95-dropdown-item" onClick={() => { handleSalir(); closeMenu(); }}>
                             <u>S</u>alir (Reiniciar)
                           </button>
@@ -1649,8 +1697,11 @@ function App() {
                           <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
                             {theme === 'win7' && '✓ '}Windows 7 (Aero)
                           </button>
-                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                            {theme === 'win10' && '✓ '}Windows 10
+                          <button className={`win95-dropdown-item ${theme === 'win10-light' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-light'); closeMenu(); }}>
+                            {theme === 'win10-light' && '✓ '}Windows 10 Light
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10-dark' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-dark'); closeMenu(); }}>
+                            {theme === 'win10-dark' && '✓ '}Windows 10 Dark
                           </button>
                         </div>
                       )}
@@ -1793,8 +1844,11 @@ function App() {
                           <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
                             {theme === 'win7' && '✓ '}Windows 7 (Aero)
                           </button>
-                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                            {theme === 'win10' && '✓ '}Windows 10
+                          <button className={`win95-dropdown-item ${theme === 'win10-light' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-light'); closeMenu(); }}>
+                            {theme === 'win10-light' && '✓ '}Windows 10 Light
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10-dark' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-dark'); closeMenu(); }}>
+                            {theme === 'win10-dark' && '✓ '}Windows 10 Dark
                           </button>
                         </div>
                       )}
@@ -1906,8 +1960,11 @@ function App() {
                           <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
                             {theme === 'win7' && '✓ '}Windows 7 (Aero)
                           </button>
-                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                            {theme === 'win10' && '✓ '}Windows 10
+                          <button className={`win95-dropdown-item ${theme === 'win10-light' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-light'); closeMenu(); }}>
+                            {theme === 'win10-light' && '✓ '}Windows 10 Light
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10-dark' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-dark'); closeMenu(); }}>
+                            {theme === 'win10-dark' && '✓ '}Windows 10 Dark
                           </button>
                         </div>
                       )}
@@ -2019,8 +2076,11 @@ function App() {
                           <button className={`win95-dropdown-item ${theme === 'win7' ? 'checked' : ''}`} onClick={() => { toggleTheme('win7'); closeMenu(); }}>
                             {theme === 'win7' && '✓ '}Windows 7 (Aero)
                           </button>
-                          <button className={`win95-dropdown-item ${theme === 'win10' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10'); closeMenu(); }}>
-                            {theme === 'win10' && '✓ '}Windows 10
+                          <button className={`win95-dropdown-item ${theme === 'win10-light' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-light'); closeMenu(); }}>
+                            {theme === 'win10-light' && '✓ '}Windows 10 Light
+                          </button>
+                          <button className={`win95-dropdown-item ${theme === 'win10-dark' ? 'checked' : ''}`} onClick={() => { toggleTheme('win10-dark'); closeMenu(); }}>
+                            {theme === 'win10-dark' && '✓ '}Windows 10 Dark
                           </button>
                         </div>
                       )}
@@ -2213,7 +2273,8 @@ Instrucciones:
                 {theme === 'win95' ? 'Windows 95' :
                  theme === 'winxp' ? 'Windows XP' :
                  theme === 'win7' ? 'Windows 7' :
-                 theme === 'win10' ? 'Windows 10' : 'Windows'}
+                 theme === 'win10-light' ? 'Windows 10 Light' :
+                 theme === 'win10-dark' ? 'Windows 10 Dark' : 'Windows'}
               </span>
             </div>
             <div className="start-menu-list">
@@ -2280,8 +2341,11 @@ Instrucciones:
                   <button className={`submenu-item ${theme === 'win7' ? 'active' : ''}`} onClick={() => { toggleTheme('win7'); setIsStartMenuOpen(false); }}>
                     Windows 7 (Aero)
                   </button>
-                  <button className={`submenu-item ${theme === 'win10' ? 'active' : ''}`} onClick={() => { toggleTheme('win10'); setIsStartMenuOpen(false); }}>
-                    Windows 10
+                  <button className={`submenu-item ${theme === 'win10-light' ? 'active' : ''}`} onClick={() => { toggleTheme('win10-light'); setIsStartMenuOpen(false); }}>
+                    Windows 10 Light
+                  </button>
+                  <button className={`submenu-item ${theme === 'win10-dark' ? 'active' : ''}`} onClick={() => { toggleTheme('win10-dark'); setIsStartMenuOpen(false); }}>
+                    Windows 10 Dark
                   </button>
                 </div>
               </div>
@@ -2333,7 +2397,7 @@ Instrucciones:
           /* iOS Status Bar */
           <div className="status-bar-ios">
             <div className="status-bar-left">
-              <span className="carrier-text">Antigravity LTE</span>
+              <span className="carrier-text">Henry7001 5G</span>
               <span className="signal-icon">📶</span>
             </div>
             <div className="status-bar-center">{currentTime}</div>
@@ -2358,7 +2422,7 @@ Instrucciones:
 
         {/* Mobile Header / Navigation Bar */}
         <div className="mobile-header">
-          {theme === 'win10' ? (
+          {theme.startsWith('win10') ? (
             /* Android Header */
             <div className="header-android">
               <h1>MundialStats 2026</h1>
@@ -2425,11 +2489,14 @@ Instrucciones:
                         <button className={`win95-btn ${theme === 'winxp' ? 'default-btn' : ''}`} onClick={() => toggleTheme('winxp')}>
                           Windows Mobile
                         </button>
-                        <button className={`win95-btn ${theme === 'win7' ? 'default-btn' : ''}`} onClick={() => toggleTheme('win7')}>
+                        <button className={`win95-btn ${theme === 'ios' ? 'default-btn' : ''}`} onClick={() => toggleTheme('ios')}>
                           iOS
                         </button>
-                        <button className={`win95-btn ${theme === 'win10' ? 'default-btn' : ''}`} onClick={() => toggleTheme('win10')}>
-                          Android
+                        <button className={`win95-btn ${theme === 'android-light' ? 'default-btn' : ''}`} onClick={() => toggleTheme('android-light')}>
+                          Android (Claro)
+                        </button>
+                        <button className={`win95-btn ${theme === 'android-dark' ? 'default-btn' : ''}`} onClick={() => toggleTheme('android-dark')}>
+                          Android (Oscuro)
                         </button>
                       </div>
                     </fieldset>
@@ -2448,8 +2515,13 @@ Instrucciones:
                       </button>
                     </fieldset>
 
+                    {/* Share system */}
+                    <button className="win95-btn" style={{ marginTop: '20px', width: '100%', color: 'var(--color-win-text)', fontWeight: 'bold' }} onClick={handleShare}>
+                      Compartir Simulación
+                    </button>
+
                     {/* Reset system */}
-                    <button className="win95-btn" style={{ marginTop: '20px', width: '100%', color: 'var(--color-loss-text)', fontWeight: 'bold' }} onClick={handleSalir}>
+                    <button className="win95-btn" style={{ marginTop: '10px', width: '100%', color: 'var(--color-loss-text)', fontWeight: 'bold' }} onClick={handleSalir}>
                       Reiniciar Simulación
                     </button>
                   </div>
@@ -2460,7 +2532,7 @@ Instrucciones:
         </div>
 
         {/* Mobile Bottom Navigation Bar based on theme */}
-        {theme === 'win10' ? (
+        {theme.startsWith('android') ? (
           /* Android Bottom Navigation */
           <div className="nav-android">
             <button className={`nav-android-item ${activeMobileTab === 'matches' ? 'active' : ''}`} onClick={() => setActiveMobileTab('matches')}>
@@ -2484,7 +2556,7 @@ Instrucciones:
               <span className="nav-label">Ajustes</span>
             </button>
           </div>
-        ) : theme === 'win7' ? (
+        ) : theme === 'ios' ? (
           /* iOS Bottom Navigation */
           <div className="nav-ios">
             <button className={`nav-ios-item ${activeMobileTab === 'matches' ? 'active' : ''}`} onClick={() => setActiveMobileTab('matches')}>

@@ -1,0 +1,40 @@
+.theme-winxp {
+  /* Windows XP Royal Blue / Luna Theme */
+  --desktop-bg: #245dd7; /* XP Blue Screen background */
+
+  /* Panels & Windows Colors */
+  --win-bg: #ece9d8; /* Standard XP sand color */
+  --win-fg: #000000;
+  --win-border-light: #ffffff;
+  --win-border-dark: #aca899;
+  --win-border-darkest: #716f64;
+
+  /* Title Bars */
+  --title-bg-start: #0058e6; /* Classic XP Royal Blue gradient start */
+  --title-bg-end: #3f8cf3;
+  --title-text: #ffffff;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #f4f3ee;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #d00000;
+  --color-live-bg: #fdf5e6;
+  --color-completed-text: #007000;
+  --color-win-text: #007000;
+  --color-loss-text: #d00000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #e2decb;
+  --scrollbar-track: #f1efe2;
+  --scrollbar-thumb: #c7c2ab;
+}
+
+/* OS Specific refinements */
+.theme-winxp .win95-window, .theme-winxp .desktop-window { border-radius: 6px 6px 0 0 !important; }
+.theme-winxp .win95-title-bar { border-radius: 4px 4px 0 0 !important; }

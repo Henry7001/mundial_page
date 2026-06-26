@@ -1,0 +1,40 @@
+.theme-win7 {
+  /* Windows 7 Aero glass Theme */
+  --desktop-bg: #1d5f8c; /* Windows 7 Darker Sky Blue */
+
+  /* Panels & Windows Colors */
+  --win-bg: rgba(220, 235, 252, 0.85); /* Aero Translucent Glass Panel */
+  --win-fg: #000000;
+  --win-border-light: rgba(255, 255, 255, 0.8);
+  --win-border-dark: rgba(100, 140, 180, 0.6);
+  --win-border-darkest: rgba(50, 50, 50, 0.4);
+
+  /* Title Bars */
+  --title-bg-start: rgba(200, 225, 255, 0.6); /* Sky Glass effect */
+  --title-bg-end: rgba(140, 195, 235, 0.6);
+  --title-text: #050505;
+
+  /* Inputs & Textbox */
+  --input-bg: #ffffff;
+  --input-fg: #000000;
+
+  /* Buttons */
+  --btn-bg: #fdfdfd;
+  --btn-fg: #000000;
+
+  /* Custom Status Badges */
+  --color-live-text: #cc0000;
+  --color-live-bg: #ffffd0;
+  --color-completed-text: #006600;
+  --color-win-text: #008000;
+  --color-loss-text: #cc0000;
+
+  /* Tables & Scrollbar */
+  --table-header-bg: #e1edf7;
+  --scrollbar-track: #e2ecf5;
+  --scrollbar-thumb: #a6bed3;
+}
+
+/* OS Specific refinements */
+.theme-win7 .win95-window, .theme-win7 .desktop-window { border-radius: 8px !important; backdrop-filter: blur(8px); box-shadow: 0 0 15px rgba(0,0,0,0.3) !important; }
+.theme-win7 .win95-title-bar { border-radius: 6px 6px 0 0 !important; text-shadow: 0 0 4px rgba(255,255,255,0.7); }
