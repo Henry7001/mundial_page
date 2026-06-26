@@ -392,7 +392,7 @@ const slotMappings = [
   { id: 79, name: "M79", home: { type: "winner", group: "A" }, away: { type: "third", index: 2 } },
   { id: 80, name: "M80", home: { type: "winner", group: "G" }, away: { type: "runner_up", group: "D" } },
   { id: 81, name: "M81", home: { type: "winner", group: "B" }, away: { type: "third", index: 3 } },
-  { id: 82, name: "M82", home: { type: "winner", group: "H" }, away: { type: "runner_up", group: "J" } },
+  { id: 82, name: "M82", home: { type: "runner_up", group: "G" }, away: { type: "runner_up", group: "J" } },
   { id: 83, name: "M83", home: { type: "winner", group: "D" }, away: { type: "third", index: 4 } },
   { id: 84, name: "M84", home: { type: "runner_up", group: "K" }, away: { type: "runner_up", group: "L" } },
   { id: 85, name: "M85", home: { type: "winner", group: "H" }, away: { type: "third", index: 5 } },
@@ -401,15 +401,17 @@ const slotMappings = [
   { id: 88, name: "M88", home: { type: "winner", group: "K" }, away: { type: "third", index: 7 } },
 ];
 
-const resolveTeam = (slot, groupsList, bestThirdsList) => {
+const resolveTeam = (slot, groupsList, bestThirdsList, showPossibleMatches = true) => {
   if (!groupsList || groupsList.length === 0) {
     return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
   }
   if (slot.type === "winner" || slot.type === "runner_up") {
     const group = groupsList.find(g => g.letter === slot.group);
     if (group && group.teams && group.teams.length > 0) {
-      // Check if group is decided (at least one team has games played)
-      const isDecided = group.teams.some(t => t.games_played > 0);
+      // Check if group is decided based on showPossibleMatches
+      const isDecided = showPossibleMatches 
+        ? group.teams.some(t => t.games_played > 0)
+        : group.teams.every(t => t.games_played === 3);
       if (isDecided) {
         const team = slot.type === "winner" ? group.teams[0] : group.teams[1];
         if (team) {
@@ -432,7 +434,9 @@ const resolveTeam = (slot, groupsList, bestThirdsList) => {
     const thirdTeam = bestThirdsList && bestThirdsList[slot.index];
     if (thirdTeam) {
       const group = groupsList.find(g => g.letter === thirdTeam.group);
-      const isDecided = group && group.teams.some(t => t.games_played > 0);
+      const isDecided = showPossibleMatches
+        ? group && group.teams.some(t => t.games_played > 0)
+        : group && group.teams.every(t => t.games_played === 3);
       if (isDecided) {
         return {
           country: thirdTeam.country,
@@ -452,13 +456,13 @@ const resolveTeam = (slot, groupsList, bestThirdsList) => {
   return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
 };
 
-const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores) => {
+const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, showPossibleMatches = true) => {
   const matches = {};
 
   // 1. Resolve Round of 32 (M73 - M88)
   slotMappings.forEach(mapping => {
-    const homeTeam = resolveTeam(mapping.home, groupsList, bestThirdsList);
-    const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList);
+    const homeTeam = resolveTeam(mapping.home, groupsList, bestThirdsList, showPossibleMatches);
+    const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList, showPossibleMatches);
     
     const score = knockoutScores[mapping.id] || {};
     const homeScore = score.home !== undefined ? score.home : null;
@@ -610,6 +614,7 @@ function App() {
   const [stageFilter, setStageFilter] = useState('all'); // 'all' | 'group' | 'knockout'
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'completed' | 'scheduled'
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showPossibleMatches, setShowPossibleMatches] = useState(true);
 
   // State and ref for interactive score edits
   const [customScores, setCustomScores] = useState({});
@@ -701,6 +706,7 @@ function App() {
     setKnockoutScores({});
     setActiveKnockoutRound('r32');
     setFocusedWindow('matches');
+    setShowPossibleMatches(true);
     fetchData(); // reload fresh copy
     alert("Se ha reiniciado el software MundialStats a su estado original.");
   };
@@ -1319,7 +1325,7 @@ function App() {
 
   const renderBracketContent = () => {
     const thirdsList = calculateBestThirds(groups);
-    const bracketMatches = resolveKnockoutBracket(groups, thirdsList, knockoutScores);
+    const bracketMatches = resolveKnockoutBracket(groups, thirdsList, knockoutScores, showPossibleMatches);
 
     // Filter matches by current tab and sort by match ID
     const activeMatches = Object.values(bracketMatches)
@@ -1360,6 +1366,16 @@ function App() {
           >
             Semis y Final
           </button>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', paddingRight: '4px', paddingBottom: '2px' }}>
+            <input 
+              type="checkbox" 
+              id="showPossible"
+              checked={showPossibleMatches}
+              onChange={(e) => setShowPossibleMatches(e.target.checked)}
+              style={{ margin: 0, cursor: 'pointer' }}
+            />
+            <label htmlFor="showPossible" style={{ cursor: 'pointer', userSelect: 'none', color: 'var(--win-text)' }}>Posibles Matches</label>
+          </div>
         </div>
 
         {/* Matches Grid */}
