@@ -691,12 +691,14 @@ function App() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFallback, setIsFallback] = useState(false);
+  const isGroupStageOver = new Date() > new Date('2026-06-28T00:00:00-05:00');
+  
   const [activeTab, setActiveTab] = useState('matches'); // 'matches' | 'standings'
   const [searchQuery, setSearchQuery] = useState('');
-  const [stageFilter, setStageFilter] = useState('all'); // 'all' | 'group' | 'knockout'
+  const [stageFilter, setStageFilter] = useState(isGroupStageOver ? 'knockout' : 'all'); // 'all' | 'group' | 'knockout'
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'completed' | 'scheduled'
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showPossibleMatches, setShowPossibleMatches] = useState(true);
+  const [showPossibleMatches, setShowPossibleMatches] = useState(false);
 
   // State and ref for interactive score edits
   const [customScores, setCustomScores] = useState(() => {
@@ -730,17 +732,17 @@ function App() {
   // Desktop environment states
   const [isMatchesOpen, setIsMatchesOpen] = useState(true);
   const [isMatchesMinimized, setIsMatchesMinimized] = useState(false);
-  const [isStandingsOpen, setIsStandingsOpen] = useState(true);
+  const [isStandingsOpen, setIsStandingsOpen] = useState(!isGroupStageOver);
   const [isStandingsMinimized, setIsStandingsMinimized] = useState(false);
-  const [isThirdsOpen, setIsThirdsOpen] = useState(true);
+  const [isThirdsOpen, setIsThirdsOpen] = useState(!isGroupStageOver);
   const [isThirdsMinimized, setIsThirdsMinimized] = useState(false);
   const [isBracketOpen, setIsBracketOpen] = useState(true);
   const [isBracketMinimized, setIsBracketMinimized] = useState(false);
-  const [focusedWindow, setFocusedWindow] = useState('matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'readme'
+  const [focusedWindow, setFocusedWindow] = useState(isGroupStageOver ? 'bracket' : 'matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'readme'
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [showReadme, setShowReadme] = useState(false);
   const [selectedShortcut, setSelectedShortcut] = useState(null);
-  const [activeMobileTab, setActiveMobileTab] = useState('matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'settings'
+  const [activeMobileTab, setActiveMobileTab] = useState(isGroupStageOver ? 'bracket' : 'matches'); // 'matches' | 'standings' | 'thirds' | 'bracket' | 'settings'
   const [winPositions, setWinPositions] = useState({
     matches: { x: 40, y: 12 },
     standings: { x: 620, y: 12 },
@@ -1505,16 +1507,18 @@ function App() {
           >
             Semis y Final
           </button>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', paddingRight: '4px', paddingBottom: '2px' }}>
-            <input 
-              type="checkbox" 
-              id="showPossible"
-              checked={showPossibleMatches}
-              onChange={(e) => setShowPossibleMatches(e.target.checked)}
-              style={{ margin: 0, cursor: 'pointer' }}
-            />
-            <label htmlFor="showPossible" style={{ cursor: 'pointer', userSelect: 'none', color: 'var(--win-text)' }}>Posibles Matches</label>
-          </div>
+          {!isGroupStageOver && (
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', paddingRight: '4px', paddingBottom: '2px' }}>
+              <input 
+                type="checkbox" 
+                id="showPossible"
+                checked={showPossibleMatches}
+                onChange={(e) => setShowPossibleMatches(e.target.checked)}
+                style={{ margin: 0, cursor: 'pointer' }}
+              />
+              <label htmlFor="showPossible" style={{ cursor: 'pointer', userSelect: 'none', color: 'var(--win-text)' }}>Posibles Matches</label>
+            </div>
+          )}
         </div>
 
         {/* Matches Grid */}
