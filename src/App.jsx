@@ -384,24 +384,37 @@ const calculateBestThirds = (groupsList) => {
 // Pre-defined pairings for the 16 Round of 32 matches in the 2026 World Cup format
 const slotMappings = [
   { id: 73, name: "M73", home: { type: "runner_up", group: "A" }, away: { type: "runner_up", group: "B" } },
-  { id: 74, name: "M74", home: { type: "winner", group: "E" }, away: { type: "third", index: 0 } }, // 1st best third
+  { id: 74, name: "M74", home: { type: "winner", group: "E" }, away: { type: "third", allowed: ['A','B','C','D','F'] } },
   { id: 75, name: "M75", home: { type: "winner", group: "F" }, away: { type: "runner_up", group: "C" } },
   { id: 76, name: "M76", home: { type: "winner", group: "C" }, away: { type: "runner_up", group: "F" } },
-  { id: 77, name: "M77", home: { type: "winner", group: "I" }, away: { type: "third", index: 1 } },
+  { id: 77, name: "M77", home: { type: "winner", group: "I" }, away: { type: "third", allowed: ['C','D','F','G','H'] } },
   { id: 78, name: "M78", home: { type: "runner_up", group: "E" }, away: { type: "runner_up", group: "I" } },
-  { id: 79, name: "M79", home: { type: "winner", group: "A" }, away: { type: "third", index: 2 } },
-  { id: 80, name: "M80", home: { type: "winner", group: "G" }, away: { type: "runner_up", group: "D" } },
-  { id: 81, name: "M81", home: { type: "winner", group: "B" }, away: { type: "third", index: 3 } },
-  { id: 82, name: "M82", home: { type: "runner_up", group: "G" }, away: { type: "runner_up", group: "J" } },
-  { id: 83, name: "M83", home: { type: "winner", group: "D" }, away: { type: "third", index: 4 } },
-  { id: 84, name: "M84", home: { type: "runner_up", group: "K" }, away: { type: "runner_up", group: "L" } },
-  { id: 85, name: "M85", home: { type: "winner", group: "H" }, away: { type: "third", index: 5 } },
+  { id: 79, name: "M79", home: { type: "winner", group: "A" }, away: { type: "third", allowed: ['C','E','F','H','I'] } },
+  { id: 80, name: "M80", home: { type: "winner", group: "L" }, away: { type: "third", allowed: ['E','H','I','J','K'] } },
+  { id: 81, name: "M81", home: { type: "winner", group: "D" }, away: { type: "third", allowed: ['B','E','F','I','J'] } },
+  { id: 82, name: "M82", home: { type: "winner", group: "G" }, away: { type: "third", allowed: ['A','E','H','I','J'] } },
+  { id: 83, name: "M83", home: { type: "runner_up", group: "K" }, away: { type: "runner_up", group: "L" } },
+  { id: 84, name: "M84", home: { type: "winner", group: "H" }, away: { type: "runner_up", group: "J" } },
+  { id: 85, name: "M85", home: { type: "winner", group: "B" }, away: { type: "third", allowed: ['E','F','G','I','J'] } },
   { id: 86, name: "M86", home: { type: "winner", group: "J" }, away: { type: "runner_up", group: "H" } },
-  { id: 87, name: "M87", home: { type: "winner", group: "L" }, away: { type: "third", index: 6 } },
-  { id: 88, name: "M88", home: { type: "winner", group: "K" }, away: { type: "third", index: 7 } },
+  { id: 87, name: "M87", home: { type: "winner", group: "K" }, away: { type: "third", allowed: ['D','E','I','J','L'] } },
+  { id: 88, name: "M88", home: { type: "runner_up", group: "D" }, away: { type: "runner_up", group: "G" } },
 ];
 
-const resolveTeam = (slot, groupsList, bestThirdsList, showPossibleMatches = true) => {
+const resolveTeam = (slot, groupsList, bestThirdsList, showPossibleMatches = true, matchId = null, allocatedThirdsMap = {}, apiMatch = null, isHome = true) => {
+  if (!showPossibleMatches && apiMatch) {
+    const apiTeam = isHome ? apiMatch.home_team : apiMatch.away_team;
+    const apiCountry = isHome ? apiMatch.home_team_country : apiMatch.away_team_country;
+    if (apiTeam && apiTeam.name) {
+      return {
+        country: apiCountry || "TBD",
+        name: apiTeam.name,
+        isPlaceholder: !apiCountry,
+        label: getCountryNameEs(apiCountry || "TBD", apiTeam.name)
+      };
+    }
+  }
+
   if (!groupsList || groupsList.length === 0) {
     return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
   }
@@ -431,7 +444,7 @@ const resolveTeam = (slot, groupsList, bestThirdsList, showPossibleMatches = tru
       };
     }
   } else if (slot.type === "third") {
-    const thirdTeam = bestThirdsList && bestThirdsList[slot.index];
+    const thirdTeam = allocatedThirdsMap[matchId];
     if (thirdTeam) {
       const group = groupsList.find(g => g.letter === thirdTeam.group);
       const isDecided = showPossibleMatches
@@ -446,23 +459,74 @@ const resolveTeam = (slot, groupsList, bestThirdsList, showPossibleMatches = tru
         };
       }
     }
+    const thirdSlots = slotMappings.filter(m => m.away.type === 'third' || m.home.type === 'third');
+    const slotIndex = thirdSlots.findIndex(m => m.id === matchId);
     return {
       country: "TBD",
-      name: `Por definir (3° #${slot.index + 1})`,
+      name: `Por definir (Mejor 3°)`,
       isPlaceholder: true,
-      label: `3° Grupo TBD (#${slot.index + 1})`
+      label: `3° TBD${slotIndex >= 0 ? ` (#${slotIndex + 1})` : ''}`
     };
   }
   return { country: "TBD", name: "Por definir", isPlaceholder: true, label: "Por definir" };
 };
 
-const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, showPossibleMatches = true) => {
+const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, showPossibleMatches = true, apiMatches = []) => {
   const matches = {};
+
+  // Dynamically allocate best thirds to matches using backtracking
+  const allocatedThirdsMap = {};
+  const thirdSlots = slotMappings.filter(m => m.away.type === 'third' || m.home.type === 'third');
+  
+  if (bestThirdsList && bestThirdsList.length >= 8) {
+    const thirdsToAllocate = bestThirdsList.slice(0, 8);
+    let found = false;
+    const used = new Array(8).fill(false);
+    const currentAllocation = {};
+
+    const backtrack = (slotIdx) => {
+      if (slotIdx === 8) {
+        found = true;
+        return true;
+      }
+      const match = thirdSlots[slotIdx];
+      const slotDef = match.home.type === 'third' ? match.home : match.away;
+      
+      for (let i = 0; i < 8; i++) {
+        const team = thirdsToAllocate[i];
+        if (!used[i] && slotDef.allowed.includes(team.group)) {
+          used[i] = true;
+          currentAllocation[match.id] = team;
+          if (backtrack(slotIdx + 1)) return true;
+          used[i] = false;
+          delete currentAllocation[match.id];
+        }
+      }
+      return false;
+    };
+    
+    backtrack(0);
+    
+    if (found) {
+      Object.assign(allocatedThirdsMap, currentAllocation);
+    } else {
+      // Fallback if no perfect match
+      thirdSlots.forEach((match, i) => {
+        allocatedThirdsMap[match.id] = thirdsToAllocate[i];
+      });
+    }
+  } else {
+    // Fallback if less than 8 thirds available
+    thirdSlots.forEach((match, i) => {
+      allocatedThirdsMap[match.id] = bestThirdsList && bestThirdsList[i] ? bestThirdsList[i] : null;
+    });
+  }
 
   // 1. Resolve Round of 32 (M73 - M88)
   slotMappings.forEach(mapping => {
-    const homeTeam = resolveTeam(mapping.home, groupsList, bestThirdsList, showPossibleMatches);
-    const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList, showPossibleMatches);
+    const apiMatch = apiMatches.find(m => parseInt(m.id) === parseInt(mapping.id));
+    const homeTeam = resolveTeam(mapping.home, groupsList, bestThirdsList, showPossibleMatches, mapping.id, allocatedThirdsMap, apiMatch, true);
+    const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList, showPossibleMatches, mapping.id, allocatedThirdsMap, apiMatch, false);
     
     const score = knockoutScores[mapping.id] || {};
     const homeScore = score.home !== undefined ? score.home : null;
@@ -511,11 +575,29 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
 
   // Helper to resolve subsequent knockout rounds
   const resolveNextRoundMatch = (matchId, stage, homeSourceId, awaySourceId, isLoser = false) => {
-    const homeSource = matches[homeSourceId];
-    const awaySource = matches[awaySourceId];
-    
-    const homeTeam = homeSource ? (isLoser ? homeSource.loser : homeSource.winner) : null;
-    const awayTeam = awaySource ? (isLoser ? awaySource.loser : awaySource.winner) : null;
+    let homeTeam = null;
+    let awayTeam = null;
+    const apiMatch = apiMatches.find(m => parseInt(m.id) === parseInt(matchId));
+
+    if (showPossibleMatches) {
+      const homeSource = matches[homeSourceId];
+      const awaySource = matches[awaySourceId];
+      homeTeam = homeSource ? (isLoser ? homeSource.loser : homeSource.winner) : null;
+      awayTeam = awaySource ? (isLoser ? awaySource.loser : awaySource.winner) : null;
+    } else {
+      homeTeam = apiMatch && apiMatch.home_team ? {
+         country: apiMatch.home_team_country || "TBD",
+         name: apiMatch.home_team.name,
+         isPlaceholder: !apiMatch.home_team_country,
+         label: getCountryNameEs(apiMatch.home_team_country || "TBD", apiMatch.home_team.name)
+      } : null;
+      awayTeam = apiMatch && apiMatch.away_team ? {
+         country: apiMatch.away_team_country || "TBD",
+         name: apiMatch.away_team.name,
+         isPlaceholder: !apiMatch.away_team_country,
+         label: getCountryNameEs(apiMatch.away_team_country || "TBD", apiMatch.away_team.name)
+      } : null;
+    }
 
     const score = knockoutScores[matchId] || {};
     const homeScore = score.home !== undefined ? score.home : null;
@@ -576,19 +658,19 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
   };
 
   // 2. Resolve Round of 16 (M89 - M96)
-  resolveNextRoundMatch(89, 'r16', 73, 74);
-  resolveNextRoundMatch(90, 'r16', 75, 76);
-  resolveNextRoundMatch(91, 'r16', 77, 78);
+  resolveNextRoundMatch(89, 'r16', 74, 77);
+  resolveNextRoundMatch(90, 'r16', 73, 75);
+  resolveNextRoundMatch(91, 'r16', 76, 78);
   resolveNextRoundMatch(92, 'r16', 79, 80);
-  resolveNextRoundMatch(93, 'r16', 81, 82);
-  resolveNextRoundMatch(94, 'r16', 83, 84);
-  resolveNextRoundMatch(95, 'r16', 85, 86);
-  resolveNextRoundMatch(96, 'r16', 87, 88);
+  resolveNextRoundMatch(93, 'r16', 83, 84);
+  resolveNextRoundMatch(94, 'r16', 81, 82);
+  resolveNextRoundMatch(95, 'r16', 86, 88);
+  resolveNextRoundMatch(96, 'r16', 85, 87);
 
   // 3. Resolve Quarter-finals (M97 - M100)
   resolveNextRoundMatch(97, 'quarter', 89, 90);
-  resolveNextRoundMatch(98, 'quarter', 91, 92);
-  resolveNextRoundMatch(99, 'quarter', 93, 94);
+  resolveNextRoundMatch(98, 'quarter', 93, 94);
+  resolveNextRoundMatch(99, 'quarter', 91, 92);
   resolveNextRoundMatch(100, 'quarter', 95, 96);
 
   // 4. Resolve Semi-finals (M101 - M102)
@@ -1029,7 +1111,7 @@ function App() {
 
   // Memoized derived states for performance
   const memoizedThirdsList = useMemo(() => calculateBestThirds(groups), [groups]);
-  const memoizedBracketMatches = useMemo(() => resolveKnockoutBracket(groups, memoizedThirdsList, knockoutScores, showPossibleMatches), [groups, memoizedThirdsList, knockoutScores, showPossibleMatches]);
+  const memoizedBracketMatches = useMemo(() => resolveKnockoutBracket(groups, memoizedThirdsList, knockoutScores, showPossibleMatches, matches), [groups, memoizedThirdsList, knockoutScores, showPossibleMatches, matches]);
 
   const renderMatchesContent = () => {
     return (
@@ -1380,7 +1462,20 @@ function App() {
         if (activeKnockoutRound === 'final') return ['semi', 'third', 'final'].includes(m.stage);
         return false;
       })
-      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      .sort((a, b) => {
+        const r32Order = [73, 75, 74, 77, 81, 82, 83, 84, 76, 78, 79, 80, 85, 87, 86, 88];
+        const r16Order = [89, 90, 93, 94, 91, 92, 95, 96];
+        const quarterOrder = [97, 98, 99, 100];
+        
+        const getOrder = (id, stage) => {
+          if (stage === 'r32') return r32Order.indexOf(parseInt(id));
+          if (stage === 'r16') return r16Order.indexOf(parseInt(id));
+          if (stage === 'quarter') return quarterOrder.indexOf(parseInt(id));
+          return parseInt(id);
+        };
+
+        return getOrder(a.id, a.stage) - getOrder(b.id, b.stage);
+      });
 
     return (
       <div className="win95-view-content bracket-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
