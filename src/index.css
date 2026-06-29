@@ -55,11 +55,11 @@ body {
 /* Desktop draggable windows */
 .desktop-window {
   position: absolute !important;
-  width: 560px !important;
-  height: 580px !important;
-  max-height: calc(100% - 62px) !important;
-  min-height: 300px !important;
-  min-width: 300px !important;
+  width: 560px;
+  height: 580px;
+  max-height: calc(100% - 62px);
+  min-height: 300px;
+  min-width: 300px;
   /* Restore retro borders that .win95-window resets */
   border-top: 2px solid var(--win-border-light) !important;
   border-left: 2px solid var(--win-border-light) !important;
@@ -71,17 +71,17 @@ body {
     4px 4px 10px rgba(0,0,0,0.25) !important;
 }
 .desktop-window.standings-window {
-  width: 540px !important;
-  height: 600px !important;
+  width: 540px;
+  height: 600px;
 }
 .desktop-window.thirds-window {
-  width: 550px !important;
-  height: 490px !important;
+  width: 550px;
+  height: 490px;
 }
 .desktop-window.readme-window {
-  width: 320px !important;
-  height: 320px !important;
-  min-height: unset !important;
+  width: 320px;
+  height: 320px;
+  min-height: unset;
 }
 .desktop-window.focused {
   box-shadow:
@@ -1268,7 +1268,8 @@ body {
   border-radius: 4px !important;
 }
 
-.theme-winxp .win95-window.main-window {
+.theme-winxp .win95-window.main-window,
+.theme-winxp .desktop-window {
   border: 3px solid #0054e3 !important;
   border-radius: 8px 8px 0 0 !important;
   box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
@@ -1388,7 +1389,8 @@ body {
   border-radius: 4px !important;
 }
 
-.theme-win7 .win95-window.main-window {
+.theme-win7 .win95-window.main-window,
+.theme-win7 .desktop-window {
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   border-radius: 8px !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
@@ -1545,7 +1547,8 @@ body {
   border-radius: 0px !important;
 }
 
-.theme-win10 .win95-window.main-window {
+.theme-win10 .win95-window.main-window,
+.theme-win10 .desktop-window {
   border: 1px solid #888888 !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
   border-radius: 0px !important;
@@ -2489,8 +2492,8 @@ body {
 /* Bracket Window and Cards styling */
 /* ========================================== */
 .desktop-window.bracket-window {
-  width: 580px !important;
-  height: 600px !important;
+  width: 580px;
+  height: 600px;
 }
 
 .win95-tab-btn {

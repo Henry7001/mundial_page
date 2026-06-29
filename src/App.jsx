@@ -798,6 +798,32 @@ function App() {
     bracket: { x: 190, y: 110 },
     readme: { x: 280, y: 120 },
   });
+
+  const [winSizes, setWinSizes] = useState({
+    matches: { width: 560, height: 480 },
+    standings: { width: 420, height: 400 },
+    thirds: { width: 420, height: 350 },
+    bracket: { width: 800, height: 500 },
+    readme: { width: 320, height: 350 },
+  });
+
+  const [maximizedWindows, setMaximizedWindows] = useState({
+    matches: false,
+    standings: false,
+    thirds: false,
+    bracket: false,
+    readme: false,
+  });
+
+  const toggleMaximize = (key) => {
+    setMaximizedWindows(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const dragStateRef = useRef(null);
+  const resizeStateRef = useRef(null);
   
   // Knockout stage simulation states
   const [activeKnockoutRound, setActiveKnockoutRound] = useState('r32'); // 'r32' | 'r16' | 'quarter' | 'semi-final'
@@ -814,7 +840,7 @@ function App() {
     localStorage.setItem('mundialstats-knockoutScores', JSON.stringify(knockoutScores));
   }, [knockoutScores]);
   
-  const dragStateRef = useRef(null);
+
 
   // Digital clock helper for taskbar tray
   const [currentTime, setCurrentTime] = useState('');
@@ -901,17 +927,31 @@ function App() {
   // Window drag-and-drop for desktop
   useEffect(() => {
     const onMove = (e) => {
-      if (!dragStateRef.current) return;
-      const { key, sx, sy, px, py } = dragStateRef.current;
-      setWinPositions(prev => ({
-        ...prev,
-        [key]: {
-          x: Math.max(0, px + (e.clientX - sx)),
-          y: Math.max(0, py + (e.clientY - sy)),
-        },
-      }));
+      if (dragStateRef.current) {
+        const { key, sx, sy, px, py } = dragStateRef.current;
+        setWinPositions(prev => ({
+          ...prev,
+          [key]: {
+            x: Math.max(0, px + (e.clientX - sx)),
+            y: Math.max(0, py + (e.clientY - sy)),
+          },
+        }));
+      } else if (resizeStateRef.current) {
+        const { key, sx, sy, sw, sh } = resizeStateRef.current;
+        setWinSizes(prev => {
+          const newWidth = Math.max(320, sw + (e.clientX - sx));
+          const newHeight = Math.max(200, sh + (e.clientY - sy));
+          return {
+            ...prev,
+            [key]: { width: newWidth, height: newHeight }
+          };
+        });
+      }
     };
-    const onUp = () => { dragStateRef.current = null; };
+    const onUp = () => { 
+      dragStateRef.current = null; 
+      resizeStateRef.current = null;
+    };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
     return () => {
@@ -921,10 +961,18 @@ function App() {
   }, []);
 
   const handleDragStart = (key, e) => {
+    if (maximizedWindows[key]) return;
     e.preventDefault();
     e.stopPropagation();
     const p = winPositions[key];
     dragStateRef.current = { key, sx: e.clientX, sy: e.clientY, px: p.x, py: p.y };
+  };
+
+  const handleResizeStart = (key, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const s = winSizes[key];
+    resizeStateRef.current = { key, sx: e.clientX, sy: e.clientY, sw: s.width, sh: s.height };
   };
 
   // Desktop shortcut click handler
@@ -1883,10 +1931,19 @@ function App() {
             <>
               {/* Matches Window (Partidos) */}
               {isMatchesOpen && !isMatchesMinimized && (
-                <div 
+                 <div 
                   className={`win95-window desktop-window matches-window ${focusedWindow === 'matches' ? 'focused' : 'inactive'}`}
                   onClick={() => setFocusedWindow('matches')}
-                  style={{ zIndex: focusedWindow === 'matches' ? 100 : 50, left: winPositions.matches.x, top: winPositions.matches.y }}
+                  style={{
+                    zIndex: focusedWindow === 'matches' ? 100 : 50,
+                    left: maximizedWindows.matches ? 0 : winPositions.matches.x,
+                    top: maximizedWindows.matches ? 0 : winPositions.matches.y,
+                    width: maximizedWindows.matches ? '100%' : `${winSizes.matches.width}px`,
+                    height: maximizedWindows.matches ? '100%' : `${winSizes.matches.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    position: 'absolute'
+                  }}
                 >
                   {/* Title Bar */}
                   <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('matches', e)} style={{ cursor: 'move', userSelect: 'none' }}>
@@ -1896,7 +1953,9 @@ function App() {
                     </div>
                     <div className="win95-title-buttons">
                       <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsMatchesMinimized(true); }}>_</button>
-                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn" title={maximizedWindows.matches ? "Restaurar" : "Maximizar"} onClick={(e) => { e.stopPropagation(); toggleMaximize('matches'); }}>
+                        {maximizedWindows.matches ? "❐" : "⬜"}
+                      </button>
                       <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsMatchesOpen(false); }}>X</button>
                     </div>
                   </div>
@@ -2029,6 +2088,24 @@ function App() {
                       Mundial 2026
                     </div>
                   </div>
+
+                  {/* Resize handle */}
+                  {!maximizedWindows.matches && (
+                    <div 
+                      onMouseDown={(e) => handleResizeStart('matches', e)} 
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        cursor: 'se-resize',
+                        zIndex: 999,
+                        background: 'linear-gradient(135deg, transparent 40%, #808080 40%, #808080 60%, transparent 60%, transparent 70%, #808080 70%, #808080 90%, transparent 90%)',
+                        backgroundSize: '3px 3px'
+                      }} 
+                    />
+                  )}
                 </div>
               )}
 
@@ -2037,7 +2114,16 @@ function App() {
                 <div 
                   className={`win95-window desktop-window standings-window ${focusedWindow === 'standings' ? 'focused' : 'inactive'}`}
                   onClick={() => setFocusedWindow('standings')}
-                  style={{ zIndex: focusedWindow === 'standings' ? 100 : 50, left: winPositions.standings.x, top: winPositions.standings.y }}
+                  style={{
+                    zIndex: focusedWindow === 'standings' ? 100 : 50,
+                    left: maximizedWindows.standings ? 0 : winPositions.standings.x,
+                    top: maximizedWindows.standings ? 0 : winPositions.standings.y,
+                    width: maximizedWindows.standings ? '100%' : `${winSizes.standings.width}px`,
+                    height: maximizedWindows.standings ? '100%' : `${winSizes.standings.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    position: 'absolute'
+                  }}
                 >
                   {/* Title Bar */}
                   <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('standings', e)} style={{ cursor: 'move', userSelect: 'none' }}>
@@ -2047,7 +2133,9 @@ function App() {
                     </div>
                     <div className="win95-title-buttons">
                       <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsStandingsMinimized(true); }}>_</button>
-                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn" title={maximizedWindows.standings ? "Restaurar" : "Maximizar"} onClick={(e) => { e.stopPropagation(); toggleMaximize('standings'); }}>
+                        {maximizedWindows.standings ? "❐" : "⬜"}
+                      </button>
                       <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsStandingsOpen(false); }}>X</button>
                     </div>
                   </div>
@@ -2145,6 +2233,24 @@ function App() {
                       Mundial 2026
                     </div>
                   </div>
+
+                  {/* Resize handle */}
+                  {!maximizedWindows.standings && (
+                    <div 
+                      onMouseDown={(e) => handleResizeStart('standings', e)} 
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        cursor: 'se-resize',
+                        zIndex: 999,
+                        background: 'linear-gradient(135deg, transparent 40%, #808080 40%, #808080 60%, transparent 60%, transparent 70%, #808080 70%, #808080 90%, transparent 90%)',
+                        backgroundSize: '3px 3px'
+                      }} 
+                    />
+                  )}
                 </div>
               )}
 
@@ -2153,7 +2259,16 @@ function App() {
                 <div 
                   className={`win95-window desktop-window thirds-window ${focusedWindow === 'thirds' ? 'focused' : 'inactive'}`}
                   onClick={() => setFocusedWindow('thirds')}
-                  style={{ zIndex: focusedWindow === 'thirds' ? 100 : 50, left: winPositions.thirds.x, top: winPositions.thirds.y }}
+                  style={{
+                    zIndex: focusedWindow === 'thirds' ? 100 : 50,
+                    left: maximizedWindows.thirds ? 0 : winPositions.thirds.x,
+                    top: maximizedWindows.thirds ? 0 : winPositions.thirds.y,
+                    width: maximizedWindows.thirds ? '100%' : `${winSizes.thirds.width}px`,
+                    height: maximizedWindows.thirds ? '100%' : `${winSizes.thirds.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    position: 'absolute'
+                  }}
                 >
                   {/* Title Bar */}
                   <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('thirds', e)} style={{ cursor: 'move', userSelect: 'none' }}>
@@ -2163,7 +2278,9 @@ function App() {
                     </div>
                     <div className="win95-title-buttons">
                       <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsThirdsMinimized(true); }}>_</button>
-                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn" title={maximizedWindows.thirds ? "Restaurar" : "Maximizar"} onClick={(e) => { e.stopPropagation(); toggleMaximize('thirds'); }}>
+                        {maximizedWindows.thirds ? "❐" : "⬜"}
+                      </button>
                       <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsThirdsOpen(false); }}>X</button>
                     </div>
                   </div>
@@ -2261,6 +2378,24 @@ function App() {
                       Mundial 2026
                     </div>
                   </div>
+
+                  {/* Resize handle */}
+                  {!maximizedWindows.thirds && (
+                    <div 
+                      onMouseDown={(e) => handleResizeStart('thirds', e)} 
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        cursor: 'se-resize',
+                        zIndex: 999,
+                        background: 'linear-gradient(135deg, transparent 40%, #808080 40%, #808080 60%, transparent 60%, transparent 70%, #808080 70%, #808080 90%, transparent 90%)',
+                        backgroundSize: '3px 3px'
+                      }} 
+                    />
+                  )}
                 </div>
               )}
 
@@ -2269,7 +2404,16 @@ function App() {
                 <div 
                   className={`win95-window desktop-window bracket-window ${focusedWindow === 'bracket' ? 'focused' : 'inactive'}`}
                   onClick={() => setFocusedWindow('bracket')}
-                  style={{ zIndex: focusedWindow === 'bracket' ? 100 : 50, left: winPositions.bracket.x, top: winPositions.bracket.y }}
+                  style={{
+                    zIndex: focusedWindow === 'bracket' ? 100 : 50,
+                    left: maximizedWindows.bracket ? 0 : winPositions.bracket.x,
+                    top: maximizedWindows.bracket ? 0 : winPositions.bracket.y,
+                    width: maximizedWindows.bracket ? '100%' : `${winSizes.bracket.width}px`,
+                    height: maximizedWindows.bracket ? '100%' : `${winSizes.bracket.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    position: 'absolute'
+                  }}
                 >
                   {/* Title Bar */}
                   <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('bracket', e)} style={{ cursor: 'move', userSelect: 'none' }}>
@@ -2279,7 +2423,9 @@ function App() {
                     </div>
                     <div className="win95-title-buttons">
                       <button className="win95-title-btn" title="Minimizar" onClick={(e) => { e.stopPropagation(); setIsBracketMinimized(true); }}>_</button>
-                      <button className="win95-title-btn" title="Maximizar" disabled>⬜</button>
+                      <button className="win95-title-btn" title={maximizedWindows.bracket ? "Restaurar" : "Maximizar"} onClick={(e) => { e.stopPropagation(); toggleMaximize('bracket'); }}>
+                        {maximizedWindows.bracket ? "❐" : "⬜"}
+                      </button>
                       <button className="win95-title-btn close" title="Cerrar" onClick={(e) => { e.stopPropagation(); setIsBracketOpen(false); }}>X</button>
                     </div>
                   </div>
@@ -2377,6 +2523,24 @@ function App() {
                       Mundial 2026
                     </div>
                   </div>
+
+                  {/* Resize handle */}
+                  {!maximizedWindows.bracket && (
+                    <div 
+                      onMouseDown={(e) => handleResizeStart('bracket', e)} 
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '12px',
+                        height: '12px',
+                        cursor: 'se-resize',
+                        zIndex: 999,
+                        background: 'linear-gradient(135deg, transparent 40%, #808080 40%, #808080 60%, transparent 60%, transparent 70%, #808080 70%, #808080 90%, transparent 90%)',
+                        backgroundSize: '3px 3px'
+                      }} 
+                    />
+                  )}
                 </div>
               )}
 
@@ -2385,7 +2549,16 @@ function App() {
                 <div 
                   className={`win95-window desktop-window readme-window ${focusedWindow === 'readme' ? 'focused' : 'inactive'}`}
                   onClick={() => setFocusedWindow('readme')}
-                  style={{ zIndex: focusedWindow === 'readme' ? 100 : 50, left: winPositions.readme.x, top: winPositions.readme.y, width: '320px', height: '350px' }}
+                  style={{
+                    zIndex: focusedWindow === 'readme' ? 100 : 50,
+                    left: maximizedWindows.readme ? 0 : winPositions.readme.x,
+                    top: maximizedWindows.readme ? 0 : winPositions.readme.y,
+                    width: maximizedWindows.readme ? '100%' : `${winSizes.readme.width}px`,
+                    height: maximizedWindows.readme ? '100%' : `${winSizes.readme.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    position: 'absolute'
+                  }}
                 >
                   <div className="win95-title-bar" onMouseDown={(e) => handleDragStart('readme', e)} style={{ cursor: 'move', userSelect: 'none' }}>
                     <div className="win95-title-text">
@@ -2393,10 +2566,13 @@ function App() {
                       <span>LEEME.txt - Bloc de notas</span>
                     </div>
                     <div className="win95-title-buttons">
+                      <button className="win95-title-btn" title={maximizedWindows.readme ? "Restaurar" : "Maximizar"} onClick={(e) => { e.stopPropagation(); toggleMaximize('readme'); }}>
+                        {maximizedWindows.readme ? "❐" : "⬜"}
+                      </button>
                       <button className="win95-title-btn close" onClick={() => setShowReadme(false)}>X</button>
                     </div>
                   </div>
-                  <div className="win95-window-body">
+                  <div className="win95-window-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     <textarea 
                       className="win95-input-control text-editor-area" 
                       readOnly 
@@ -2411,9 +2587,23 @@ Instrucciones:
 4. Para reiniciar el software, usa la Papelera de Reciclaje o el menú de Inicio.`}
                       style={{ flex: 1, resize: 'none', fontFamily: 'Courier New, monospace', fontSize: '11px', lineHeight: '1.3' }}
                     />
-                    <div className="about-btn-row" style={{ marginTop: '8px' }}>
-                      <button className="win95-btn" onClick={() => setShowReadme(false)}>Cerrar</button>
-                    </div>
+                    {/* Resize handle */}
+                    {!maximizedWindows.readme && (
+                      <div 
+                        onMouseDown={(e) => handleResizeStart('readme', e)} 
+                        style={{
+                          position: 'absolute',
+                          right: 0,
+                          bottom: 0,
+                          width: '12px',
+                          height: '12px',
+                          cursor: 'se-resize',
+                          zIndex: 999,
+                          background: 'linear-gradient(135deg, transparent 40%, #808080 40%, #808080 60%, transparent 60%, transparent 70%, #808080 70%, #808080 90%, transparent 90%)',
+                          backgroundSize: '3px 3px'
+                        }} 
+                      />
+                    )}
                   </div>
                 </div>
               )}
