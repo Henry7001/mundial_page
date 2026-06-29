@@ -756,7 +756,25 @@ function App() {
   const [customScores, setCustomScores] = useState(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('sim')) return JSON.parse(atob(urlParams.get('sim')));
+      if (urlParams.has('sim')) {
+        const simVal = urlParams.get('sim');
+        if (simVal.includes('.') || simVal.includes('-')) {
+          const parsed = {};
+          simVal.split(',').forEach(item => {
+            const parts = item.split('.');
+            if (parts.length === 2) {
+              const id = parts[0];
+              const scores = parts[1].split('-');
+              if (scores.length === 2) {
+                parsed[id] = { home: parseInt(scores[0]), away: parseInt(scores[1]) };
+              }
+            }
+          });
+          return parsed;
+        } else {
+          return JSON.parse(atob(simVal));
+        }
+      }
       const saved = localStorage.getItem('mundialstats-customScores');
       return saved ? JSON.parse(saved) : {};
     } catch(e) { return {}; }
@@ -834,7 +852,39 @@ function App() {
   const [knockoutScores, setKnockoutScores] = useState(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('ko_sim')) return JSON.parse(atob(urlParams.get('ko_sim')));
+      if (urlParams.has('ko_sim')) {
+        const koVal = urlParams.get('ko_sim');
+        if (koVal.includes('.') || koVal.includes('-')) {
+          const parsed = {};
+          koVal.split(',').forEach(item => {
+            const hasPens = item.includes('p');
+            const mainPart = hasPens ? item.split('p')[0] : item;
+            const pensPart = hasPens ? item.split('p')[1] : null;
+            
+            const parts = mainPart.split('.');
+            if (parts.length === 2) {
+              const id = parts[0];
+              const scores = parts[1].split('-');
+              if (scores.length === 2) {
+                parsed[id] = { 
+                  home: parseInt(scores[0]), 
+                  away: parseInt(scores[1]) 
+                };
+                if (pensPart) {
+                  const pens = pensPart.split('-');
+                  if (pens.length === 2) {
+                    parsed[id].homePens = parseInt(pens[0]);
+                    parsed[id].awayPens = parseInt(pens[1]);
+                  }
+                }
+              }
+            }
+          });
+          return parsed;
+        } else {
+          return JSON.parse(atob(koVal));
+        }
+      }
       const saved = localStorage.getItem('mundialstats-knockoutScores');
       return saved ? JSON.parse(saved) : {};
     } catch(e) { return {}; }
@@ -900,10 +950,22 @@ function App() {
     try {
       const url = new URL(window.location.origin + window.location.pathname);
       if (Object.keys(customScores).length > 0) {
-        url.searchParams.set('sim', btoa(JSON.stringify(customScores)));
+        const serialized = Object.entries(customScores)
+          .map(([id, s]) => `${id}.${s.home}-${s.away}`)
+          .join(',');
+        url.searchParams.set('sim', serialized);
       }
       if (Object.keys(knockoutScores).length > 0) {
-        url.searchParams.set('ko_sim', btoa(JSON.stringify(knockoutScores)));
+        const serialized = Object.entries(knockoutScores)
+          .map(([id, s]) => {
+            let str = `${id}.${s.home}-${s.away}`;
+            if (s.homePens !== undefined && s.homePens !== null) {
+              str += `p${s.homePens}-${s.awayPens}`;
+            }
+            return str;
+          })
+          .join(',');
+        url.searchParams.set('ko_sim', serialized);
       }
       navigator.clipboard.writeText(url.toString());
       alert("¡Enlace copiado al portapapeles! Puedes compartirlo para que vean tu simulación.");
