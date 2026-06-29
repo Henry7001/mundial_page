@@ -177,6 +177,25 @@ const mapOpenFootballMatches = (openMatches, teamsList) => {
   });
 };
 
+const stadiumDisplayInfo = {
+  '1': { name: 'Estadio Azteca', location: 'Ciudad de México, México' },
+  '2': { name: 'Estadio Akron', location: 'Guadalajara, México' },
+  '3': { name: 'Estadio BBVA', location: 'Monterrey, México' },
+  '4': { name: 'AT&T Stadium', location: 'Dallas/Arlington, USA' },
+  '5': { name: 'NRG Stadium', location: 'Houston, USA' },
+  '6': { name: 'Arrowhead Stadium', location: 'Kansas City, USA' },
+  '7': { name: 'Mercedes-Benz Stadium', location: 'Atlanta, USA' },
+  '8': { name: 'Hard Rock Stadium', location: 'Miami, USA' },
+  '9': { name: 'Gillette Stadium', location: 'Boston/Foxborough, USA' },
+  '10': { name: 'Lincoln Financial Field', location: 'Filadelfia, USA' },
+  '11': { name: 'MetLife Stadium', location: 'Nueva York/Nueva Jersey, USA' },
+  '12': { name: 'BMO Field', location: 'Toronto, Canadá' },
+  '13': { name: 'BC Place', location: 'Vancouver, Canadá' },
+  '14': { name: 'Lumen Field', location: 'Seattle, USA' },
+  '15': { name: 'Levi\'s Stadium', location: 'San Francisco/Santa Clara, USA' },
+  '16': { name: 'SoFi Stadium', location: 'Los Ángeles/Inglewood, USA' }
+};
+
 // Standalone match normalization helper
 const normalizeMatchesData = (rawMatches, teamsList, stadiaList) => {
   const normalizedMatches = rawMatches.map(match => {
@@ -223,10 +242,14 @@ const normalizeMatchesData = (rawMatches, teamsList, stadiaList) => {
     // Determine group letter
     const groupLetter = match.group || homeTeam?.groups || homeTeam?.group || '';
 
+    const stdInfo = stadium ? stadiumDisplayInfo[String(stadium.id)] : null;
+    const venue = stdInfo?.name || stadium?.name_en || 'Estadio';
+    const location = stdInfo?.location || (stadium?.city_en && stadium?.country_en ? `${stadium.city_en}, ${stadium.country_en}` : stadium?.city_en || 'Ciudad');
+
     return {
       id: match.id,
-      venue: stadium?.name_en || 'Estadio',
-      location: stadium?.city_en && stadium?.country_en ? `${stadium.city_en}, ${stadium.country_en}` : stadium?.city_en || 'Ciudad',
+      venue: venue,
+      location: location,
       status: status,
       stage_name: stageName,
       home_team_id: match.home_team_id,
@@ -529,8 +552,18 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
     const awayTeam = resolveTeam(mapping.away, groupsList, bestThirdsList, showPossibleMatches, mapping.id, allocatedThirdsMap, apiMatch, false);
     
     const score = knockoutScores[mapping.id] || {};
-    const homeScore = score.home !== undefined ? score.home : null;
-    const awayScore = score.away !== undefined ? score.away : null;
+    let homeScore = score.home !== undefined ? score.home : null;
+    let awayScore = score.away !== undefined ? score.away : null;
+    let homePens = score.homePens || 0;
+    let awayPens = score.awayPens || 0;
+
+    // Use API match scores if they are available and no user simulation score has been defined yet
+    if (homeScore === null && awayScore === null && apiMatch && (apiMatch.status === 'completed' || apiMatch.status === 'simulated')) {
+      homeScore = apiMatch.home_team.goals;
+      awayScore = apiMatch.away_team.goals;
+      homePens = apiMatch.home_team.penalties || 0;
+      awayPens = apiMatch.away_team.penalties || 0;
+    }
     
     // Determine winner and loser
     let winner = null;
@@ -543,8 +576,6 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
         winner = awayTeam;
         loser = homeTeam;
       } else {
-        const homePens = score.homePens || 0;
-        const awayPens = score.awayPens || 0;
         if (homePens > awayPens) {
           winner = homeTeam;
           loser = awayTeam;
@@ -566,8 +597,8 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
       away: awayTeam,
       homeScore,
       awayScore,
-      homePens: score.homePens || 0,
-      awayPens: score.awayPens || 0,
+      homePens,
+      awayPens,
       winner,
       loser
     };
@@ -579,29 +610,48 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
     let awayTeam = null;
     const apiMatch = apiMatches.find(m => parseInt(m.id) === parseInt(matchId));
 
-    if (showPossibleMatches) {
-      const homeSource = matches[homeSourceId];
-      const awaySource = matches[awaySourceId];
-      homeTeam = homeSource ? (isLoser ? homeSource.loser : homeSource.winner) : null;
-      awayTeam = awaySource ? (isLoser ? awaySource.loser : awaySource.winner) : null;
-    } else {
-      homeTeam = apiMatch && apiMatch.home_team ? {
+    const homeSource = matches[homeSourceId];
+    const awaySource = matches[awaySourceId];
+
+    if (homeSource && homeSource.winner) {
+      homeTeam = isLoser ? homeSource.loser : homeSource.winner;
+    } else if (apiMatch && apiMatch.home_team && apiMatch.home_team.name) {
+      homeTeam = {
          country: apiMatch.home_team_country || "TBD",
          name: apiMatch.home_team.name,
          isPlaceholder: !apiMatch.home_team_country,
          label: getCountryNameEs(apiMatch.home_team_country || "TBD", apiMatch.home_team.name)
-      } : null;
-      awayTeam = apiMatch && apiMatch.away_team ? {
+      };
+    } else if (showPossibleMatches && homeSource) {
+      homeTeam = isLoser ? homeSource.loser : homeSource.winner;
+    }
+
+    if (awaySource && awaySource.winner) {
+      awayTeam = isLoser ? awaySource.loser : awaySource.winner;
+    } else if (apiMatch && apiMatch.away_team && apiMatch.away_team.name) {
+      awayTeam = {
          country: apiMatch.away_team_country || "TBD",
          name: apiMatch.away_team.name,
          isPlaceholder: !apiMatch.away_team_country,
          label: getCountryNameEs(apiMatch.away_team_country || "TBD", apiMatch.away_team.name)
-      } : null;
+      };
+    } else if (showPossibleMatches && awaySource) {
+      awayTeam = isLoser ? awaySource.loser : awaySource.winner;
     }
 
     const score = knockoutScores[matchId] || {};
-    const homeScore = score.home !== undefined ? score.home : null;
-    const awayScore = score.away !== undefined ? score.away : null;
+    let homeScore = score.home !== undefined ? score.home : null;
+    let awayScore = score.away !== undefined ? score.away : null;
+    let homePens = score.homePens || 0;
+    let awayPens = score.awayPens || 0;
+
+    // Use API match scores if they are available and no user simulation score has been defined yet
+    if (homeScore === null && awayScore === null && apiMatch && (apiMatch.status === 'completed' || apiMatch.status === 'simulated')) {
+      homeScore = apiMatch.home_team.goals;
+      awayScore = apiMatch.away_team.goals;
+      homePens = apiMatch.home_team.penalties || 0;
+      awayPens = apiMatch.away_team.penalties || 0;
+    }
 
     let winner = null;
     let loser = null;
@@ -613,8 +663,6 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
         winner = awayTeam;
         loser = homeTeam;
       } else {
-        const homePens = score.homePens || 0;
-        const awayPens = score.awayPens || 0;
         if (homePens > awayPens) {
           winner = homeTeam;
           loser = awayTeam;
@@ -650,8 +698,8 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
       away: awayTeam || defaultAwayPlaceholder,
       homeScore,
       awayScore,
-      homePens: score.homePens || 0,
-      awayPens: score.awayPens || 0,
+      homePens,
+      awayPens,
       winner,
       loser
     };
@@ -1032,40 +1080,6 @@ function App() {
     fetchData();
   }, []);
 
-  // Filter and Search Matches
-  const filteredMatches = matches.filter(match => {
-    // Search Filter
-    const homeTeamName = match.home_team?.name || '';
-    const awayTeamName = match.away_team?.name || '';
-    const homeTeamEs = getCountryNameEs(match.home_team_country, homeTeamName);
-    const awayTeamEs = getCountryNameEs(match.away_team_country, awayTeamName);
-    
-    const matchesSearch = 
-      homeTeamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      awayTeamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      homeTeamEs.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      awayTeamEs.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (match.venue || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (match.location || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      `grupo ${String(match.group || '').toLowerCase()}`.includes(searchQuery.toLowerCase());
-
-    if (!matchesSearch) return false;
-
-    // Stage Filter
-    if (stageFilter === 'group') {
-      if (match.stage_name !== 'First stage' && match.stage_name !== 'group') return false;
-    } else if (stageFilter === 'knockout') {
-      if (match.stage_name === 'First stage' || match.stage_name === 'group') return false;
-    }
-
-    // Status Filter
-    if (statusFilter === 'completed' && match.status !== 'completed') return false;
-    if (statusFilter === 'scheduled' && match.status !== 'future_unscheduled' && match.status !== 'future_scheduled') return false;
-    if (statusFilter === 'live' && match.status !== 'in_progress') return false;
-
-    return true;
-  });
-
   // Format Date (Spanish format)
   const formatMatchDate = (dateString) => {
     try {
@@ -1114,6 +1128,84 @@ function App() {
   // Memoized derived states for performance
   const memoizedThirdsList = useMemo(() => calculateBestThirds(groups), [groups]);
   const memoizedBracketMatches = useMemo(() => resolveKnockoutBracket(groups, memoizedThirdsList, knockoutScores, showPossibleMatches, matches), [groups, memoizedThirdsList, knockoutScores, showPossibleMatches, matches]);
+
+  const allDisplayMatches = useMemo(() => {
+    const groupMatches = matches.filter(m => m.stage_name === 'First stage' || m.stage_name === 'group' || !m.stage_name || parseInt(m.id) <= 72);
+    const bracketList = Object.values(memoizedBracketMatches).map(bm => {
+      const originalMatch = matches.find(m => String(m.id) === String(bm.id));
+      let status = 'future_scheduled';
+      if (originalMatch && originalMatch.status === 'completed') {
+        status = 'completed';
+      } else if (bm.homeScore !== null && bm.awayScore !== null) {
+        status = 'simulated';
+      } else if (originalMatch && originalMatch.status === 'in_progress') {
+        status = 'in_progress';
+      }
+      return {
+        id: bm.id,
+        venue: originalMatch?.venue || 'Estadio',
+        location: originalMatch?.location || 'Por definir',
+        status: status,
+        stage_name: bm.stage,
+        home_team_id: null,
+        away_team_id: null,
+        home_team_country: bm.home.country,
+        away_team_country: bm.away.country,
+        datetime: originalMatch?.datetime || originalMatch?.date || originalMatch?.local_date || null,
+        group: '',
+        winner_code: bm.winner ? bm.winner.country : null,
+        home_team: {
+          country: bm.home.country,
+          name: bm.home.name,
+          goals: bm.homeScore,
+          penalties: bm.homePens || 0
+        },
+        away_team: {
+          country: bm.away.country,
+          name: bm.away.name,
+          goals: bm.awayScore,
+          penalties: bm.awayPens || 0
+        },
+        isKnockout: true,
+        isPlaceholder: bm.home.isPlaceholder || bm.away.isPlaceholder
+      };
+    });
+    return [...groupMatches, ...bracketList].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+  }, [matches, memoizedBracketMatches]);
+
+  // Filter and Search Matches
+  const filteredMatches = allDisplayMatches.filter(match => {
+    // Search Filter
+    const homeTeamName = match.home_team?.name || '';
+    const awayTeamName = match.away_team?.name || '';
+    const homeTeamEs = getCountryNameEs(match.home_team_country, homeTeamName);
+    const awayTeamEs = getCountryNameEs(match.away_team_country, awayTeamName);
+    
+    const matchesSearch = 
+      homeTeamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      awayTeamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      homeTeamEs.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      awayTeamEs.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (match.venue || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (match.location || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (match.group ? `grupo ${String(match.group || '').toLowerCase()}`.includes(searchQuery.toLowerCase()) : false);
+
+    if (!matchesSearch) return false;
+
+    // Stage Filter
+    if (stageFilter === 'group') {
+      if (match.stage_name !== 'First stage' && match.stage_name !== 'group') return false;
+    } else if (stageFilter === 'knockout') {
+      if (match.stage_name === 'First stage' || match.stage_name === 'group') return false;
+    }
+
+    // Status Filter
+    if (statusFilter === 'completed' && match.status !== 'completed') return false;
+    if (statusFilter === 'scheduled' && match.status !== 'future_unscheduled' && match.status !== 'future_scheduled') return false;
+    if (statusFilter === 'live' && match.status !== 'in_progress') return false;
+
+    return true;
+  });
 
   const renderMatchesContent = () => {
     return (
@@ -1182,9 +1274,14 @@ function App() {
               const awayTeamEs = getCountryNameEs(awayTeamCode, awayTeamName);
               const homeFlag = getCountryFlagUrl(homeTeamCode, homeTeamName);
               const awayFlag = getCountryFlagUrl(awayTeamCode, awayTeamName);
-
-              const isHomeWinner = match.status === 'completed' && match.winner_code === homeTeamCode;
-              const isAwayWinner = match.status === 'completed' && match.winner_code === awayTeamCode;
+              const isKnockout = match.isKnockout;
+              const koWinner = isKnockout && memoizedBracketMatches[match.id]?.winner;
+              const isHomeWinner = isKnockout 
+                ? koWinner && koWinner.country === homeTeamCode 
+                : match.status === 'completed' && match.winner_code === homeTeamCode;
+              const isAwayWinner = isKnockout 
+                ? koWinner && koWinner.country === awayTeamCode 
+                : match.status === 'completed' && match.winner_code === awayTeamCode;
               
               let statusLabel = 'Programado';
               let statusClass = 'scheduled';
@@ -1220,9 +1317,21 @@ function App() {
                             type="number" 
                             min="0"
                             className="win95-match-score-input"
-                            value={customScores[match.id] !== undefined || match.status === 'in_progress' ? match.home_team.goals : ''}
+                            value={
+                              isKnockout 
+                                ? (match.home_team.goals !== null && match.home_team.goals !== undefined ? match.home_team.goals : '')
+                                : (customScores[match.id] !== undefined || match.status === 'in_progress' ? match.home_team.goals : '')
+                            }
                             placeholder="-"
-                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
+                            disabled={isKnockout && match.isPlaceholder}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value);
+                              if (isKnockout) {
+                                handleKnockoutScoreChange(match.id, 'home', val);
+                              } else {
+                                handleScoreChange(match.id, 'home', val === null ? 0 : val);
+                              }
+                            }}
                           />
                         ) : (
                           <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>
@@ -1244,9 +1353,21 @@ function App() {
                             type="number" 
                             min="0"
                             className="win95-match-score-input"
-                            value={customScores[match.id] !== undefined || match.status === 'in_progress' ? match.away_team.goals : ''}
+                            value={
+                              isKnockout 
+                                ? (match.away_team.goals !== null && match.away_team.goals !== undefined ? match.away_team.goals : '')
+                                : (customScores[match.id] !== undefined || match.status === 'in_progress' ? match.away_team.goals : '')
+                            }
                             placeholder="-"
-                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
+                            disabled={isKnockout && match.isPlaceholder}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value);
+                              if (isKnockout) {
+                                handleKnockoutScoreChange(match.id, 'away', val);
+                              } else {
+                                handleScoreChange(match.id, 'away', val === null ? 0 : val);
+                              }
+                            }}
                           />
                         ) : (
                           <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>
@@ -1256,11 +1377,47 @@ function App() {
                       </div>
                     </div>
 
-                    {customScores[match.id] !== undefined && (
+                    {/* Penalty Row if Tied (simulated knockout) */}
+                    {(() => {
+                      if (!isKnockout) return null;
+                      const homeScore = knockoutScores[match.id]?.home;
+                      const awayScore = knockoutScores[match.id]?.away;
+                      const isSimulated = homeScore !== undefined && awayScore !== undefined;
+                      const isTied = isSimulated && homeScore === awayScore;
+                      if (!isTied) return null;
+                      return (
+                        <div className="retro-match-penalties-input-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed #ccc', fontSize: '10px', marginBottom: '6px' }}>
+                          <span>Penaltis:</span>
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            <input 
+                              type="number" 
+                              min="0"
+                              className="win95-match-pens-input"
+                              style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
+                              value={knockoutScores[match.id]?.homePens || ''}
+                              placeholder="P"
+                              onChange={(e) => handleKnockoutPensChange(match.id, 'home', parseInt(e.target.value) || 0)}
+                            />
+                            <span>-</span>
+                            <input 
+                              type="number" 
+                              min="0"
+                              className="win95-match-pens-input"
+                              style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
+                              value={knockoutScores[match.id]?.awayPens || ''}
+                              placeholder="P"
+                              onChange={(e) => handleKnockoutPensChange(match.id, 'away', parseInt(e.target.value) || 0)}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {((!isKnockout && customScores[match.id] !== undefined) || (isKnockout && knockoutScores[match.id] !== undefined)) && (
                       <div className="retro-match-reset-row" style={{ marginTop: '2px', marginBottom: '6px', textAlign: 'right' }}>
                         <button 
                           className="win95-btn reset-score-btn" 
-                          onClick={() => handleResetScore(match.id)}
+                          onClick={() => isKnockout ? handleResetKnockoutMatch(match.id) : handleResetScore(match.id)}
                           style={{ fontSize: '9px', padding: '1px 5px', height: '17px', minHeight: 'unset', minWidth: 'unset', verticalAlign: 'middle' }}
                           title="Restablecer original"
                         >
@@ -1537,7 +1694,10 @@ function App() {
             else if (m.stage === 'third') stageEs = "3° Puesto";
             else if (m.stage === 'final') stageEs = "Gran Final";
 
-            const disabledInputs = m.home.isPlaceholder || m.away.isPlaceholder;
+            const originalMatch = matches.find(om => String(om.id) === String(m.id));
+            const isCompletedInApi = originalMatch && originalMatch.status === 'completed';
+            const disabledInputs = m.home.isPlaceholder || m.away.isPlaceholder || isCompletedInApi;
+            const showReset = isSimulated && !isCompletedInApi;
 
             return (
               <div key={m.id} className={`win95-match-card-win ${isSimulated ? 'simulated' : ''}`} style={{ margin: 0 }}>
@@ -1610,6 +1770,7 @@ function App() {
                           style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
                           value={m.homePens || ''}
                           placeholder="P"
+                          disabled={disabledInputs}
                           onChange={(e) => handleKnockoutPensChange(m.id, 'home', parseInt(e.target.value) || 0)}
                         />
                         <span>-</span>
@@ -1620,6 +1781,7 @@ function App() {
                           style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
                           value={m.awayPens || ''}
                           placeholder="P"
+                          disabled={disabledInputs}
                           onChange={(e) => handleKnockoutPensChange(m.id, 'away', parseInt(e.target.value) || 0)}
                         />
                       </div>
@@ -1627,7 +1789,7 @@ function App() {
                   )}
 
                   {/* Reset Button */}
-                  {isSimulated && (
+                  {showReset && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
                       <button 
                         className="win95-btn reset-score-btn" 
