@@ -554,15 +554,15 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
     const score = knockoutScores[mapping.id] || {};
     let homeScore = score.home !== undefined ? score.home : null;
     let awayScore = score.away !== undefined ? score.away : null;
-    let homePens = score.homePens || 0;
-    let awayPens = score.awayPens || 0;
+    let homePens = score.homePens !== undefined && score.homePens !== null ? score.homePens : null;
+    let awayPens = score.awayPens !== undefined && score.awayPens !== null ? score.awayPens : null;
 
     // Use API match scores if they are available and no user simulation score has been defined yet
     if (homeScore === null && awayScore === null && apiMatch && (apiMatch.status === 'completed' || apiMatch.status === 'simulated')) {
       homeScore = apiMatch.home_team.goals;
       awayScore = apiMatch.away_team.goals;
-      homePens = apiMatch.home_team.penalties || 0;
-      awayPens = apiMatch.away_team.penalties || 0;
+      homePens = apiMatch.home_team.penalties !== undefined && apiMatch.home_team.penalties !== null ? apiMatch.home_team.penalties : null;
+      awayPens = apiMatch.away_team.penalties !== undefined && apiMatch.away_team.penalties !== null ? apiMatch.away_team.penalties : null;
     }
     
     // Determine winner and loser
@@ -576,10 +576,12 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
         winner = awayTeam;
         loser = homeTeam;
       } else {
-        if (homePens > awayPens) {
+        const hp = homePens !== null ? homePens : 0;
+        const ap = awayPens !== null ? awayPens : 0;
+        if (hp > ap) {
           winner = homeTeam;
           loser = awayTeam;
-        } else if (awayPens > homePens) {
+        } else if (ap > hp) {
           winner = awayTeam;
           loser = homeTeam;
         } else {
@@ -642,15 +644,15 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
     const score = knockoutScores[matchId] || {};
     let homeScore = score.home !== undefined ? score.home : null;
     let awayScore = score.away !== undefined ? score.away : null;
-    let homePens = score.homePens || 0;
-    let awayPens = score.awayPens || 0;
+    let homePens = score.homePens !== undefined && score.homePens !== null ? score.homePens : null;
+    let awayPens = score.awayPens !== undefined && score.awayPens !== null ? score.awayPens : null;
 
     // Use API match scores if they are available and no user simulation score has been defined yet
     if (homeScore === null && awayScore === null && apiMatch && (apiMatch.status === 'completed' || apiMatch.status === 'simulated')) {
       homeScore = apiMatch.home_team.goals;
       awayScore = apiMatch.away_team.goals;
-      homePens = apiMatch.home_team.penalties || 0;
-      awayPens = apiMatch.away_team.penalties || 0;
+      homePens = apiMatch.home_team.penalties !== undefined && apiMatch.home_team.penalties !== null ? apiMatch.home_team.penalties : null;
+      awayPens = apiMatch.away_team.penalties !== undefined && apiMatch.away_team.penalties !== null ? apiMatch.away_team.penalties : null;
     }
 
     let winner = null;
@@ -663,10 +665,12 @@ const resolveKnockoutBracket = (groupsList, bestThirdsList, knockoutScores, show
         winner = awayTeam;
         loser = homeTeam;
       } else {
-        if (homePens > awayPens) {
+        const hp = homePens !== null ? homePens : 0;
+        const ap = awayPens !== null ? awayPens : 0;
+        if (hp > ap) {
           winner = homeTeam;
           loser = awayTeam;
-        } else if (awayPens > homePens) {
+        } else if (ap > hp) {
           winner = awayTeam;
           loser = homeTeam;
         } else {
@@ -1655,65 +1659,184 @@ function App() {
       </div>
     );
   };
-
   const renderBracketContent = () => {
-    const thirdsList = memoizedThirdsList;
     const bracketMatches = memoizedBracketMatches;
 
-    // Filter matches by current tab and sort by match ID
-    const activeMatches = Object.values(bracketMatches)
-      .filter(m => {
-        if (activeKnockoutRound === 'r32') return m.stage === 'r32';
-        if (activeKnockoutRound === 'r16') return m.stage === 'r16';
-        if (activeKnockoutRound === 'quarter') return m.stage === 'quarter';
-        if (activeKnockoutRound === 'final') return ['semi', 'third', 'final'].includes(m.stage);
-        return false;
-      })
-      .sort((a, b) => {
-        const r32Order = [73, 75, 74, 77, 81, 82, 83, 84, 76, 78, 79, 80, 85, 87, 86, 88];
-        const r16Order = [89, 90, 93, 94, 91, 92, 95, 96];
-        const quarterOrder = [97, 98, 99, 100];
-        
-        const getOrder = (id, stage) => {
-          if (stage === 'r32') return r32Order.indexOf(parseInt(id));
-          if (stage === 'r16') return r16Order.indexOf(parseInt(id));
-          if (stage === 'quarter') return quarterOrder.indexOf(parseInt(id));
-          return parseInt(id);
-        };
+    // Sort matches by stage specific pairings
+    const r32Order = [73, 75, 74, 77, 81, 82, 83, 84, 76, 78, 79, 80, 85, 87, 86, 88];
+    const r16Order = [90, 89, 94, 93, 91, 92, 96, 95];
+    const quarterOrder = [97, 98, 99, 100];
+    const semiOrder = [101, 102];
 
-        return getOrder(a.id, a.stage) - getOrder(b.id, b.stage);
-      });
+    const getMatchesForRound = (stage, order) => {
+      return Object.values(bracketMatches)
+        .filter(m => m.stage === stage)
+        .sort((a, b) => order.indexOf(parseInt(a.id)) - order.indexOf(parseInt(b.id)));
+    };
+
+    const r32Matches = getMatchesForRound('r32', r32Order);
+    const r16Matches = getMatchesForRound('r16', r16Order);
+    const quarterMatches = getMatchesForRound('quarter', quarterOrder);
+    const semiMatches = getMatchesForRound('semi', semiOrder);
+    const finalMatch = Object.values(bracketMatches).find(m => m.stage === 'final');
+    const thirdMatch = Object.values(bracketMatches).find(m => m.stage === 'third');
+    const champion = finalMatch && finalMatch.winner && !finalMatch.winner.isPlaceholder ? finalMatch.winner : null;
+    let runnerUp = null;
+    if (champion) {
+      runnerUp = (finalMatch.home.country === champion.country) ? finalMatch.away : finalMatch.home;
+      if (runnerUp.isPlaceholder) runnerUp = null;
+    }
+    const thirdPlace = thirdMatch && thirdMatch.winner && !thirdMatch.winner.isPlaceholder ? thirdMatch.winner : null;
+
+    const championFlag = champion ? getCountryFlagUrl(champion.country, champion.name) : null;
+    const runnerUpFlag = runnerUp ? getCountryFlagUrl(runnerUp.country, runnerUp.name) : null;
+    const thirdPlaceFlag = thirdPlace ? getCountryFlagUrl(thirdPlace.country, thirdPlace.name) : null;
+
+    // Split Left and Right sides for symmetry
+    const leftR32 = r32Matches.slice(0, 8);
+    const rightR32 = r32Matches.slice(8, 16);
+
+    const leftR16 = r16Matches.slice(0, 4);
+    const rightR16 = r16Matches.slice(4, 8);
+
+    const leftQuarter = quarterMatches.slice(0, 2);
+    const rightQuarter = quarterMatches.slice(2, 4);
+
+    const leftSemi = semiMatches.slice(0, 1);
+    const rightSemi = semiMatches.slice(1, 2);
+
+    const centerMatches = [finalMatch, thirdMatch].filter(Boolean);
+
+    const renderBracketCard = (m) => {
+      if (!m) return null;
+      const homeFlag = getCountryFlagUrl(m.home.country, m.home.name);
+      const awayFlag = getCountryFlagUrl(m.away.country, m.away.name);
+      const isSimulated = m.homeScore !== null && m.awayScore !== null;
+      const isTied = isSimulated && m.homeScore === m.awayScore;
+      
+      let stageEs = "Dieciseisavos";
+      if (m.stage === 'r16') stageEs = "Octavos";
+      else if (m.stage === 'quarter') stageEs = "Cuartos";
+      else if (m.stage === 'semi') stageEs = "Semifinal";
+      else if (m.stage === 'third') stageEs = "3° Puesto";
+      else if (m.stage === 'final') stageEs = "Gran Final";
+
+      const originalMatch = matches.find(om => String(om.id) === String(m.id));
+      const isCompletedInApi = originalMatch && originalMatch.status === 'completed';
+      const disabledInputs = m.home.isPlaceholder || m.away.isPlaceholder || isCompletedInApi;
+      const showReset = isSimulated && !isCompletedInApi;
+
+      return (
+        <div key={m.id} className={`win95-match-card-win bracket-card ${isSimulated ? 'simulated' : ''}`} style={{ width: '190px', margin: '4px 0', flexShrink: 0 }}>
+          <div className="win95-match-card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 4px' }}>
+            <span style={{ fontSize: '9px', fontWeight: 'bold' }}>M#{m.id} - {stageEs}</span>
+            {isSimulated && (
+              <span className="match-badge-retro simulated" style={{ fontSize: '8px', padding: '0px 2px' }}>Sim</span>
+            )}
+          </div>
+          <div className="win95-match-card-body" style={{ padding: '3px' }}>
+            <div className="retro-team-rows">
+              {/* Home Team */}
+              <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden' }}>
+                  <img src={homeFlag} alt={m.home.label} className="retro-flag" style={{ width: '12px', height: '8px' }} />
+                  <span className={`retro-name-txt ${m.winner && m.winner.country === m.home.country ? 'winner-bold' : ''}`} style={{ fontSize: '9.5px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '105px', color: m.home.isPlaceholder ? '#888' : 'inherit' }}>
+                    {m.home.label}
+                  </span>
+                </div>
+                <input 
+                  type="number" 
+                  min="0"
+                  className="win95-match-score-input"
+                  style={{ width: '24px', height: '15px', fontSize: '9.5px', textAlign: 'center', padding: 0 }}
+                  value={m.homeScore !== null ? m.homeScore : ''}
+                  disabled={disabledInputs}
+                  placeholder={disabledInputs ? '-' : ''}
+                  onChange={(e) => handleKnockoutScoreChange(m.id, 'home', e.target.value === '' ? null : parseInt(e.target.value))}
+                />
+              </div>
+
+              {/* Away Team */}
+              <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden' }}>
+                  <img src={awayFlag} alt={m.away.label} className="retro-flag" style={{ width: '12px', height: '8px' }} />
+                  <span className={`retro-name-txt ${m.winner && m.winner.country === m.away.country ? 'winner-bold' : ''}`} style={{ fontSize: '9.5px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '105px', color: m.away.isPlaceholder ? '#888' : 'inherit' }}>
+                    {m.away.label}
+                  </span>
+                </div>
+                <input 
+                  type="number" 
+                  min="0"
+                  className="win95-match-score-input"
+                  style={{ width: '24px', height: '15px', fontSize: '9.5px', textAlign: 'center', padding: 0 }}
+                  value={m.awayScore !== null ? m.awayScore : ''}
+                  disabled={disabledInputs}
+                  placeholder={disabledInputs ? '-' : ''}
+                  onChange={(e) => handleKnockoutScoreChange(m.id, 'away', e.target.value === '' ? null : parseInt(e.target.value))}
+                />
+              </div>
+            </div>
+
+            {/* Penalties Row */}
+            {isTied && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px', paddingTop: '2px', borderTop: '1px dashed #ccc', fontSize: '8.5px' }}>
+                <span>Pens:</span>
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    className="win95-match-pens-input"
+                    style={{ width: '24px', height: '16px', fontSize: '10px', textAlign: 'center', padding: 0 }}
+                    value={m.homePens !== null ? m.homePens : ''}
+                    placeholder="P"
+                    disabled={disabledInputs}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      handleKnockoutPensChange(m.id, 'home', val === '' ? null : parseInt(val));
+                    }}
+                  />
+                  <span>-</span>
+                  <input 
+                    type="text" 
+                    inputMode="numeric"
+                    className="win95-match-pens-input"
+                    style={{ width: '24px', height: '16px', fontSize: '10px', textAlign: 'center', padding: 0 }}
+                    value={m.awayPens !== null ? m.awayPens : ''}
+                    placeholder="P"
+                    disabled={disabledInputs}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      handleKnockoutPensChange(m.id, 'away', val === '' ? null : parseInt(val));
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Reset Button */}
+            {showReset && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2px' }}>
+                <button 
+                  className="win95-btn reset-score-btn" 
+                  onClick={() => handleResetKnockoutMatch(m.id)}
+                  style={{ fontSize: '7.5px', padding: '0px 3px', height: '13px', minHeight: 'unset', minWidth: 'unset' }}
+                >
+                  Restablecer
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
 
     return (
-      <div className="win95-view-content bracket-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
-        {/* Retro Folder Tabs */}
-        <div className="win95-tabs-container" style={{ display: 'flex', gap: '2px', borderBottom: '2px solid var(--win-border-dark)', paddingBottom: '1px' }}>
-          <button 
-            className={`win95-tab-btn ${activeKnockoutRound === 'r32' ? 'active' : ''}`}
-            onClick={() => setActiveKnockoutRound('r32')}
-          >
-            Dieciseisavos (R32)
-          </button>
-          <button 
-            className={`win95-tab-btn ${activeKnockoutRound === 'r16' ? 'active' : ''}`}
-            onClick={() => setActiveKnockoutRound('r16')}
-          >
-            Octavos (R16)
-          </button>
-          <button 
-            className={`win95-tab-btn ${activeKnockoutRound === 'quarter' ? 'active' : ''}`}
-            onClick={() => setActiveKnockoutRound('quarter')}
-          >
-            Cuartos (R8)
-          </button>
-          <button 
-            className={`win95-tab-btn ${activeKnockoutRound === 'final' ? 'active' : ''}`}
-            onClick={() => setActiveKnockoutRound('final')}
-          >
-            Semis y Final
-          </button>
+      <div className="win95-view-content bracket-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        {/* Header toolbar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', borderBottom: '2px solid var(--win-border-dark)', background: 'var(--win-bg)', zIndex: 10 }}>
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--win-text)' }}>Árbol de Eliminatorias (Lado a Lado - Final en el Centro)</span>
           {!isGroupStageOver && (
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', paddingRight: '4px', paddingBottom: '2px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
               <input 
                 type="checkbox" 
                 id="showPossible"
@@ -1726,132 +1849,121 @@ function App() {
           )}
         </div>
 
-        {/* Matches Grid */}
-        <div className="win95-bracket-grid" style={{ flex: 1, overflowY: 'auto', padding: '4px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px', alignContent: 'start' }}>
-          {activeMatches.map((m) => {
-            const homeFlag = getCountryFlagUrl(m.home.country, m.home.name);
-            const awayFlag = getCountryFlagUrl(m.away.country, m.away.name);
-            const isSimulated = m.homeScore !== null && m.awayScore !== null;
-            const isTied = isSimulated && m.homeScore === m.awayScore;
+        {/* Side-to-Side Bracket Layout */}
+        <div className="win95-bracket-columns" style={{ display: 'flex', gap: '16px', padding: '16px', overflowX: 'auto', overflowY: 'auto', flex: 1, background: 'var(--win-bg-sunken, #fff)', minHeight: 0 }}>
+          
+          {/* LEFT SIDE BRACKET */}
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Dieciseisavos Izq.</div>
+            {leftR32.map(renderBracketCard)}
+          </div>
+
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Octavos Izq.</div>
+            {leftR16.map(renderBracketCard)}
+          </div>
+
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Cuartos Izq.</div>
+            {leftQuarter.map(renderBracketCard)}
+          </div>
+
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Semis Izq.</div>
+            {leftSemi.map(renderBracketCard)}
+          </div>
+
+          {/* CENTER FINALS */}
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0, borderLeft: '1px dashed #bbb', borderRight: '1px dashed #bbb', padding: '0 8px' }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Gran Final / 3°</div>
+            {renderBracketCard(finalMatch)}
             
-            // Spanish stage name
-            let stageEs = "Dieciseisavos";
-            if (m.stage === 'r16') stageEs = "Octavos";
-            else if (m.stage === 'quarter') stageEs = "Cuartos de Final";
-            else if (m.stage === 'semi') stageEs = "Semifinal";
-            else if (m.stage === 'third') stageEs = "3° Puesto";
-            else if (m.stage === 'final') stageEs = "Gran Final";
+            {/* Tribute Podium Table */}
+            <div className="win95-match-card-win podium-tribute-box" style={{ 
+              width: '100%', 
+              margin: '6px 0', 
+              padding: '6px', 
+              background: 'var(--win-bg)',
+              border: '1px solid var(--win-border-dark)',
+              boxShadow: 'none',
+              borderRadius: '4px'
+            }}>
+              <div style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--win-text)', marginBottom: '4px', textAlign: 'center' }}>🎖️ CUADRO DE HONOR 🎖️</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9.5px', background: '#fff', border: '1px solid var(--win-border-dark)' }}>
+                <tbody>
+                  {/* Champion */}
+                  <tr style={{ background: champion ? 'linear-gradient(to right, #fff9d6, #ffe885)' : '#f8f8f8', borderBottom: '1px solid #ccc' }}>
+                    <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥇</td>
+                    <td style={{ padding: '3px 4px', fontWeight: 'bold', color: '#111', whiteSpace: 'nowrap' }}>1° Campeón</td>
+                    <td style={{ padding: '3px 4px', textAlign: 'right' }}>
+                      {champion ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}>
+                          <img src={championFlag} alt={champion.label} style={{ width: '12px', height: '8px' }} />
+                          <span style={{ fontWeight: 'bold' }}>{champion.label}</span>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#888' }}>-</span>
+                      )}
+                    </td>
+                  </tr>
+                  {/* Runner-up */}
+                  <tr style={{ background: runnerUp ? 'linear-gradient(to right, #f2f2f2, #e6e6e6)' : '#f8f8f8', borderBottom: '1px solid #ccc' }}>
+                    <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥈</td>
+                    <td style={{ padding: '3px 4px', color: '#111', whiteSpace: 'nowrap' }}>2° Subcampeón</td>
+                    <td style={{ padding: '3px 4px', textAlign: 'right' }}>
+                      {runnerUp ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}>
+                          <img src={runnerUpFlag} alt={runnerUp.label} style={{ width: '12px', height: '8px' }} />
+                          <span>{runnerUp.label}</span>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#888' }}>-</span>
+                      )}
+                    </td>
+                  </tr>
+                  {/* 3rd place */}
+                  <tr style={{ background: thirdPlace ? 'linear-gradient(to right, #faebd7, #f4a460)' : '#f8f8f8' }}>
+                    <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥉</td>
+                    <td style={{ padding: '3px 4px', color: '#111', whiteSpace: 'nowrap' }}>3° Puesto</td>
+                    <td style={{ padding: '3px 4px', textAlign: 'right' }}>
+                      {thirdPlace ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}>
+                          <img src={thirdPlaceFlag} alt={thirdPlace.label} style={{ width: '12px', height: '8px' }} />
+                          <span>{thirdPlace.label}</span>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#888' }}>-</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-            const originalMatch = matches.find(om => String(om.id) === String(m.id));
-            const isCompletedInApi = originalMatch && originalMatch.status === 'completed';
-            const disabledInputs = m.home.isPlaceholder || m.away.isPlaceholder || isCompletedInApi;
-            const showReset = isSimulated && !isCompletedInApi;
+            {renderBracketCard(thirdMatch)}
+          </div>
 
-            return (
-              <div key={m.id} className={`win95-match-card-win ${isSimulated ? 'simulated' : ''}`} style={{ margin: 0 }}>
-                <div className="win95-match-card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>Match #{m.id} - {stageEs}</span>
-                  {isSimulated && (
-                    <span className="match-badge-retro simulated" style={{ fontSize: '8px', padding: '1px 3px' }}>Simulado</span>
-                  )}
-                </div>
-                <div className="win95-match-card-body" style={{ padding: '6px' }}>
-                  <div className="retro-team-rows">
-                    {/* Home Team Row */}
-                    <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <div className="retro-team-name-flag" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                        <img src={homeFlag} alt={m.home.label} className="retro-flag" style={{ width: '16px', height: '11px', objectFit: 'cover' }} />
-                        <span 
-                          className={`retro-name-txt ${m.winner && m.winner.country === m.home.country ? 'winner-bold' : ''}`} 
-                          style={{ fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', color: m.home.isPlaceholder ? '#888' : 'inherit' }}
-                          title={m.home.label}
-                        >
-                          {m.home.label}
-                        </span>
-                      </div>
-                      <input 
-                        type="number" 
-                        min="0"
-                        className="win95-match-score-input"
-                        style={{ width: '30px', textAlign: 'center', height: '18px', padding: 0 }}
-                        value={m.homeScore !== null ? m.homeScore : ''}
-                        disabled={disabledInputs}
-                        placeholder={disabledInputs ? '-' : ''}
-                        onChange={(e) => handleKnockoutScoreChange(m.id, 'home', e.target.value === '' ? null : parseInt(e.target.value))}
-                      />
-                    </div>
+          {/* RIGHT SIDE BRACKET */}
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Semis Der.</div>
+            {rightSemi.map(renderBracketCard)}
+          </div>
 
-                    {/* Away Team Row */}
-                    <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <div className="retro-team-name-flag" style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                        <img src={awayFlag} alt={m.away.label} className="retro-flag" style={{ width: '16px', height: '11px', objectFit: 'cover' }} />
-                        <span 
-                          className={`retro-name-txt ${m.winner && m.winner.country === m.away.country ? 'winner-bold' : ''}`} 
-                          style={{ fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px', color: m.away.isPlaceholder ? '#888' : 'inherit' }}
-                          title={m.away.label}
-                        >
-                          {m.away.label}
-                        </span>
-                      </div>
-                      <input 
-                        type="number" 
-                        min="0"
-                        className="win95-match-score-input"
-                        style={{ width: '30px', textAlign: 'center', height: '18px', padding: 0 }}
-                        value={m.awayScore !== null ? m.awayScore : ''}
-                        disabled={disabledInputs}
-                        placeholder={disabledInputs ? '-' : ''}
-                        onChange={(e) => handleKnockoutScoreChange(m.id, 'away', e.target.value === '' ? null : parseInt(e.target.value))}
-                      />
-                    </div>
-                  </div>
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Cuartos Der.</div>
+            {rightQuarter.map(renderBracketCard)}
+          </div>
 
-                  {/* Penalty Row if Tied */}
-                  {isTied && (
-                    <div className="retro-match-penalties-input-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed #ccc', fontSize: '10px' }}>
-                      <span>Penaltis:</span>
-                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                        <input 
-                          type="number" 
-                          min="0"
-                          className="win95-match-pens-input"
-                          style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
-                          value={m.homePens || ''}
-                          placeholder="P"
-                          disabled={disabledInputs}
-                          onChange={(e) => handleKnockoutPensChange(m.id, 'home', parseInt(e.target.value) || 0)}
-                        />
-                        <span>-</span>
-                        <input 
-                          type="number" 
-                          min="0"
-                          className="win95-match-pens-input"
-                          style={{ width: '25px', textAlign: 'center', height: '16px', padding: 0, fontSize: '10px' }}
-                          value={m.awayPens || ''}
-                          placeholder="P"
-                          disabled={disabledInputs}
-                          onChange={(e) => handleKnockoutPensChange(m.id, 'away', parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                    </div>
-                  )}
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Octavos Der.</div>
+            {rightR16.map(renderBracketCard)}
+          </div>
 
-                  {/* Reset Button */}
-                  {showReset && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
-                      <button 
-                        className="win95-btn reset-score-btn" 
-                        onClick={() => handleResetKnockoutMatch(m.id)}
-                        style={{ fontSize: '9px', padding: '1px 5px', height: '17px', minHeight: 'unset', minWidth: 'unset' }}
-                      >
-                        Restablecer
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          <div className="bracket-column" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', minHeight: '580px', width: '190px', flexShrink: 0 }}>
+            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '10px', borderBottom: '1px solid #ccc', paddingBottom: '3px', color: 'var(--win-text)' }}>Dieciseisavos Der.</div>
+            {rightR32.map(renderBracketCard)}
+          </div>
+
         </div>
       </div>
     );
@@ -2509,7 +2621,7 @@ function App() {
 
                   {/* Window Body */}
                   <div className="win95-window-body" style={{ minHeight: 0 }}>
-                    <div className="win95-tab-pane" style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                    <div className="win95-tab-pane" style={{ flex: 1, overflow: 'hidden', padding: '8px' }}>
                       {renderBracketContent()}
                     </div>
                   </div>
