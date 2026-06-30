@@ -38,8 +38,8 @@ export default function MatchesWindow() {
     isMatchesOpen, setIsMatchesOpen,
     isMatchesMinimized, setIsMatchesMinimized,
     fetchData,
-    handleScoreChange, handleResetScore,
     handleKnockoutScoreChange, handleKnockoutPensChange, handleResetKnockoutMatch,
+    openTeamInfo,
   } = useSimulation();
 
   // Filter matches
@@ -157,7 +157,7 @@ export default function MatchesWindow() {
                         {/* Home */}
                         <div className="retro-team-row">
                           <div className="retro-team-name-flag">
-                            <img src={homeFlag} alt={homeTeamEs} className="retro-flag" />
+                            <img src={homeFlag} alt={homeTeamEs} className="retro-flag" onClick={() => homeTeamCode && openTeamInfo(homeTeamCode)} style={{ cursor: homeTeamCode ? 'pointer' : 'default' }} />
                             <span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>{homeTeamEs}</span>
                           </div>
                           {match.status !== 'completed' ? (
@@ -171,7 +171,7 @@ export default function MatchesWindow() {
                         {/* Away */}
                         <div className="retro-team-row">
                           <div className="retro-team-name-flag">
-                            <img src={awayFlag} alt={awayTeamEs} className="retro-flag" />
+                            <img src={awayFlag} alt={awayTeamEs} className="retro-flag" onClick={() => awayTeamCode && openTeamInfo(awayTeamCode)} style={{ cursor: awayTeamCode ? 'pointer' : 'default' }} />
                             <span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>{awayTeamEs}</span>
                           </div>
                           {match.status !== 'completed' ? (

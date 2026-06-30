@@ -5,6 +5,7 @@ import ThirdsWindow from './windows/ThirdsWindow';
 import BracketWindow from './windows/BracketWindow';
 import ReadmeWindow from './windows/ReadmeWindow';
 import AboutWindow from './windows/AboutWindow';
+import TeamInfoWindow from './windows/TeamInfoWindow';
 import { getCountryNameEs, getCountryFlagUrl } from './utils/countries';
 import { getStageNameEs, formatMatchDate } from './utils/dataHelpers';
 
@@ -35,6 +36,9 @@ function DesktopShell() {
     handleScoreChange, handleResetScore,
     handleKnockoutScoreChange, handleKnockoutPensChange, handleResetKnockoutMatch,
     matches, isRefreshing, hasLiveMatches,
+    openTeamInfo,
+    isTeamInfoOpen, setIsTeamInfoOpen,
+    isTeamInfoMinimized, setIsTeamInfoMinimized,
   } = useSimulation();
 
   // ---- Mobile render helpers (inline - reuses same logic as windows) ----
@@ -116,11 +120,11 @@ function DesktopShell() {
                   <div className="win95-match-card-body">
                     <div className="retro-team-rows">
                       <div className="retro-team-row">
-                        <div className="retro-team-name-flag"><img src={homeFlag} alt={homeTeamEs} className="retro-flag" /><span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>{homeTeamEs}</span></div>
+                        <div className="retro-team-name-flag"><img src={homeFlag} alt={homeTeamEs} className="retro-flag" onClick={() => homeTeamCode && openTeamInfo(homeTeamCode)} style={{ cursor: homeTeamCode ? 'pointer' : 'default' }} /><span className={`retro-name-txt ${isHomeWinner ? 'winner-bold' : ''}`}>{homeTeamEs}</span></div>
                         {match.status !== 'completed' ? (<input type="number" min="0" className="win95-match-score-input" value={isKnockout ? (match.home_team.goals !== null && match.home_team.goals !== undefined ? match.home_team.goals : '') : (customScores[match.id] !== undefined || match.status === 'in_progress' ? match.home_team.goals : '')} placeholder="-" disabled={isKnockout && match.isPlaceholder} onChange={(e) => { const val = e.target.value === '' ? null : parseInt(e.target.value); if (isKnockout) handleKnockoutScoreChange(match.id, 'home', val); else handleScoreChange(match.id, 'home', val === null ? 0 : val); }} />) : <span className={`retro-score-txt ${isHomeWinner ? 'winner-bold' : ''}`}>{match.home_team.goals}</span>}
                       </div>
                       <div className="retro-team-row">
-                        <div className="retro-team-name-flag"><img src={awayFlag} alt={awayTeamEs} className="retro-flag" /><span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>{awayTeamEs}</span></div>
+                        <div className="retro-team-name-flag"><img src={awayFlag} alt={awayTeamEs} className="retro-flag" onClick={() => awayTeamCode && openTeamInfo(awayTeamCode)} style={{ cursor: awayTeamCode ? 'pointer' : 'default' }} /><span className={`retro-name-txt ${isAwayWinner ? 'winner-bold' : ''}`}>{awayTeamEs}</span></div>
                         {match.status !== 'completed' ? (<input type="number" min="0" className="win95-match-score-input" value={isKnockout ? (match.away_team.goals !== null && match.away_team.goals !== undefined ? match.away_team.goals : '') : (customScores[match.id] !== undefined || match.status === 'in_progress' ? match.away_team.goals : '')} placeholder="-" disabled={isKnockout && match.isPlaceholder} onChange={(e) => { const val = e.target.value === '' ? null : parseInt(e.target.value); if (isKnockout) handleKnockoutScoreChange(match.id, 'away', val); else handleScoreChange(match.id, 'away', val === null ? 0 : val); }} />) : <span className={`retro-score-txt ${isAwayWinner ? 'winner-bold' : ''}`}>{match.away_team.goals}</span>}
                       </div>
                     </div>
@@ -155,7 +159,7 @@ function DesktopShell() {
                   return (
                     <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
                       <td className="text-center text-bold idx-cell">{idx + 1}</td>
-                      <td><div className="retro-table-team"><img src={flagUrl} alt={teamEs} className="retro-table-flag" /><span className="retro-table-team-name" title={teamEs}>{teamEs}</span></div></td>
+                      <td><div className="retro-table-team"><img src={flagUrl} alt={teamEs} className="retro-table-flag" onClick={() => openTeamInfo(team.country)} style={{ cursor: 'pointer' }} /><span className="retro-table-team-name" title={teamEs}>{teamEs}</span></div></td>
                       <td className="text-center">{team.games_played}</td><td className="text-center">{team.wins}</td><td className="text-center">{team.draws}</td><td className="text-center">{team.losses}</td>
                       <td className="text-center hide-mobile">{team.goals_for}</td><td className="text-center hide-mobile">{team.goals_against}</td>
                       <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>{team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}</td>
@@ -188,7 +192,7 @@ function DesktopShell() {
                   <tr key={team.country} className={isQualifying ? 'retro-qualifying' : ''}>
                     <td className="text-center text-bold idx-cell">{idx + 1}</td>
                     <td className="text-center text-bold" style={{ opacity: 0.8 }}>{team.group}</td>
-                    <td><div className="retro-table-team"><img src={flagUrl} alt={teamEs} className="retro-table-flag" /><span className="retro-table-team-name" title={teamEs}>{teamEs}</span></div></td>
+                    <td><div className="retro-table-team"><img src={flagUrl} alt={teamEs} className="retro-table-flag" onClick={() => openTeamInfo(team.country)} style={{ cursor: 'pointer' }} /><span className="retro-table-team-name" title={teamEs}>{teamEs}</span></div></td>
                     <td className="text-center">{team.games_played}</td><td className="text-center">{team.wins}</td><td className="text-center">{team.draws}</td><td className="text-center">{team.losses}</td>
                     <td className="text-center hide-mobile">{team.goals_for}</td><td className="text-center hide-mobile">{team.goals_against}</td>
                     <td className="text-center dg-cell" style={{ color: team.goal_differential > 0 ? 'var(--color-win-text)' : team.goal_differential < 0 ? 'var(--color-loss-text)' : 'inherit' }}>{team.goal_differential > 0 ? `+${team.goal_differential}` : team.goal_differential}</td>
@@ -245,6 +249,7 @@ function DesktopShell() {
               <BracketWindow />
               <ReadmeWindow />
               <AboutWindow />
+              <TeamInfoWindow />
             </>
           )}
         </div>
@@ -262,6 +267,7 @@ function DesktopShell() {
             {isThirdsOpen && <button className={`taskbar-item ${(!isThirdsMinimized && focusedWindow === 'thirds') ? 'active' : ''}`} onClick={() => { if (isThirdsMinimized) { setIsThirdsMinimized(false); setFocusedWindow('thirds'); } else if (focusedWindow === 'thirds') setIsThirdsMinimized(true); else setFocusedWindow('thirds'); }}><span className="taskbar-icon">🏆</span><span>Mejores Terceros</span></button>}
             {isBracketOpen && <button className={`taskbar-item ${(!isBracketMinimized && focusedWindow === 'bracket') ? 'active' : ''}`} onClick={() => { if (isBracketMinimized) { setIsBracketMinimized(false); setFocusedWindow('bracket'); } else if (focusedWindow === 'bracket') setIsBracketMinimized(true); else setFocusedWindow('bracket'); }}><span className="taskbar-icon">🏅</span><span>Cuadro Eliminatorio</span></button>}
             {isAboutOpen && <button className={`taskbar-item ${(!isAboutMinimized && focusedWindow === 'about') ? 'active' : ''}`} onClick={() => { if (isAboutMinimized) { setIsAboutMinimized(false); setFocusedWindow('about'); } else if (focusedWindow === 'about') setIsAboutMinimized(true); else setFocusedWindow('about'); }}><span className="taskbar-icon">❔</span><span>Acerca de</span></button>}
+            {isTeamInfoOpen && <button className={`taskbar-item ${(!isTeamInfoMinimized && focusedWindow === 'teamInfo') ? 'active' : ''}`} onClick={() => { if (isTeamInfoMinimized) { setIsTeamInfoMinimized(false); setFocusedWindow('teamInfo'); } else if (focusedWindow === 'teamInfo') setIsTeamInfoMinimized(true); else setFocusedWindow('teamInfo'); }}><span className="taskbar-icon">ℹ️</span><span>Info de Equipo</span></button>}
           </div>
           <div className="win95-system-tray">
             {isFallback ? <span className="tray-icon" title="Sin conexión - Fallback local">⚠️</span> : <span className="tray-icon" title="Conexión en vivo activa">🖧</span>}

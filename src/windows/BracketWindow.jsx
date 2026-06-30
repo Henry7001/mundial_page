@@ -24,7 +24,7 @@ function BracketMenuBar() {
 }
 
 function BracketCard({ m }) {
-  const { matches, knockoutScores, handleKnockoutScoreChange, handleKnockoutPensChange, handleResetKnockoutMatch } = useSimulation();
+  const { matches, knockoutScores, handleKnockoutScoreChange, handleKnockoutPensChange, handleResetKnockoutMatch, openTeamInfo } = useSimulation();
   if (!m) return null;
   const homeFlag = getCountryFlagUrl(m.home.country, m.home.name);
   const awayFlag = getCountryFlagUrl(m.away.country, m.away.name);
@@ -54,7 +54,7 @@ function BracketCard({ m }) {
           {/* Home */}
           <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden' }}>
-              <img src={homeFlag} alt={m.home.label} className="retro-flag" style={{ width: '12px', height: '8px' }} />
+              <img src={homeFlag} alt={m.home.label} className="retro-flag" onClick={() => !m.home.isPlaceholder && m.home.country && openTeamInfo(m.home.country)} style={{ width: '12px', height: '8px', cursor: !m.home.isPlaceholder && m.home.country ? 'pointer' : 'default' }} />
               <span className={`retro-name-txt ${m.winner && m.winner.country === m.home.country ? 'winner-bold' : ''}`} style={{ fontSize: '9.5px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '105px', color: m.home.isPlaceholder ? '#888' : 'inherit' }}>{m.home.label}</span>
             </div>
             <input type="number" min="0" className="win95-match-score-input" style={{ width: '24px', height: '15px', fontSize: '9.5px', textAlign: 'center', padding: 0 }}
@@ -65,7 +65,7 @@ function BracketCard({ m }) {
           {/* Away */}
           <div className="retro-team-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden' }}>
-              <img src={awayFlag} alt={m.away.label} className="retro-flag" style={{ width: '12px', height: '8px' }} />
+              <img src={awayFlag} alt={m.away.label} className="retro-flag" onClick={() => !m.away.isPlaceholder && m.away.country && openTeamInfo(m.away.country)} style={{ width: '12px', height: '8px', cursor: !m.away.isPlaceholder && m.away.country ? 'pointer' : 'default' }} />
               <span className={`retro-name-txt ${m.winner && m.winner.country === m.away.country ? 'winner-bold' : ''}`} style={{ fontSize: '9.5px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '105px', color: m.away.isPlaceholder ? '#888' : 'inherit' }}>{m.away.label}</span>
             </div>
             <input type="number" min="0" className="win95-match-score-input" style={{ width: '24px', height: '15px', fontSize: '9.5px', textAlign: 'center', padding: 0 }}
@@ -111,6 +111,7 @@ export default function BracketWindow() {
     showPossibleMatches, setShowPossibleMatches,
     isBracketOpen, setIsBracketOpen,
     isBracketMinimized, setIsBracketMinimized,
+    openTeamInfo,
   } = useSimulation();
 
   const bracketMatches = memoizedBracketMatches;
@@ -203,21 +204,21 @@ export default function BracketWindow() {
                     <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥇</td>
                     <td style={{ padding: '3px 4px', fontWeight: 'bold', color: '#111', whiteSpace: 'nowrap' }}>1° Campeón</td>
                     <td style={{ padding: '3px 4px', textAlign: 'right' }}>
-                      {champion ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={championFlag} alt={champion.label} style={{ width: '12px', height: '8px' }} /><span style={{ fontWeight: 'bold' }}>{champion.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
+                      {champion ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={championFlag} alt={champion.label} onClick={() => openTeamInfo(champion.country)} style={{ width: '12px', height: '8px', cursor: 'pointer' }} /><span style={{ fontWeight: 'bold' }}>{champion.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
                     </td>
                   </tr>
                   <tr style={{ background: runnerUp ? 'linear-gradient(to right, #f2f2f2, #e6e6e6)' : '#f8f8f8', borderBottom: '1px solid #ccc' }}>
                     <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥈</td>
                     <td style={{ padding: '3px 4px', color: '#111', whiteSpace: 'nowrap' }}>2° Subcampeón</td>
                     <td style={{ padding: '3px 4px', textAlign: 'right' }}>
-                      {runnerUp ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={runnerUpFlag} alt={runnerUp.label} style={{ width: '12px', height: '8px' }} /><span>{runnerUp.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
+                      {runnerUp ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={runnerUpFlag} alt={runnerUp.label} onClick={() => openTeamInfo(runnerUp.country)} style={{ width: '12px', height: '8px', cursor: 'pointer' }} /><span>{runnerUp.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
                     </td>
                   </tr>
                   <tr style={{ background: thirdPlace ? 'linear-gradient(to right, #faebd7, #f4a460)' : '#f8f8f8' }}>
                     <td style={{ padding: '3px 4px', fontWeight: 'bold', width: '16px' }}>🥉</td>
                     <td style={{ padding: '3px 4px', color: '#111', whiteSpace: 'nowrap' }}>3° Puesto</td>
                     <td style={{ padding: '3px 4px', textAlign: 'right' }}>
-                      {thirdPlace ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={thirdPlaceFlag} alt={thirdPlace.label} style={{ width: '12px', height: '8px' }} /><span>{thirdPlace.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
+                      {thirdPlace ? <div style={{ display: 'flex', alignItems: 'center', gap: '3px', justifyContent: 'flex-end' }}><img src={thirdPlaceFlag} alt={thirdPlace.label} onClick={() => openTeamInfo(thirdPlace.country)} style={{ width: '12px', height: '8px', cursor: 'pointer' }} /><span>{thirdPlace.label}</span></div> : <span style={{ color: '#888' }}>-</span>}
                     </td>
                   </tr>
                 </tbody>

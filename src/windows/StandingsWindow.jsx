@@ -28,6 +28,7 @@ export default function StandingsWindow() {
     groups,
     isStandingsOpen, setIsStandingsOpen,
     isStandingsMinimized, setIsStandingsMinimized,
+    openTeamInfo,
   } = useSimulation();
 
   const bodyContent = (
@@ -62,7 +63,7 @@ export default function StandingsWindow() {
                         <td className="text-center text-bold idx-cell">{idx + 1}</td>
                         <td>
                           <div className="retro-table-team">
-                            <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
+                            <img src={flagUrl} alt={teamEs} className="retro-table-flag" onClick={() => openTeamInfo(team.country)} style={{ cursor: 'pointer' }} />
                             <span className="retro-table-team-name" title={teamEs}>{teamEs}</span>
                           </div>
                         </td>

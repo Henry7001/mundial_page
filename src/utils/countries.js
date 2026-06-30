@@ -108,6 +108,20 @@ export function getCountryNameEs(code, fallbackName) {
 }
 
 /**
+ * Gets the English name for a FIFA country code or team name (used for API queries)
+ * @param {string} code FIFA country code (e.g. ARG)
+ * @param {string} fallbackName Fallback name if code is not found
+ * @returns {string} English country name
+ */
+export function getCountryNameEn(code, fallbackName) {
+  const cleanCode = String(code || "").toUpperCase();
+  if (countryMap[cleanCode]) {
+    return countryMap[cleanCode].nameEn;
+  }
+  return fallbackName || code;
+}
+
+/**
  * Gets the flag image URL from flagcdn.com for a given FIFA country code
  * @param {string} code FIFA country code
  * @param {string} fallbackName Team name fallback to find flag

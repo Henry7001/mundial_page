@@ -125,6 +125,17 @@ export function SimulationProvider({ children }) {
   const [showReadme, setShowReadme] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isAboutMinimized, setIsAboutMinimized] = useState(false);
+  const [isTeamInfoOpen, setIsTeamInfoOpen] = useState(false);
+  const [isTeamInfoMinimized, setIsTeamInfoMinimized] = useState(false);
+  const [selectedTeamCode, setSelectedTeamCode] = useState(null);
+  
+  const openTeamInfo = useCallback((code) => {
+    setSelectedTeamCode(code);
+    setIsTeamInfoOpen(true);
+    setIsTeamInfoMinimized(false);
+    setFocusedWindow('teamInfo');
+  }, []);
+
   const [focusedWindow, setFocusedWindow] = useState(isGroupStageOver ? 'bracket' : 'matches');
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [selectedShortcut, setSelectedShortcut] = useState(null);
@@ -137,6 +148,7 @@ export function SimulationProvider({ children }) {
     bracket: { x: 190, y: 110 },
     readme: { x: 280, y: 120 },
     about: { x: 400, y: 200 },
+    teamInfo: { x: 300, y: 150 },
   });
   const [winSizes, setWinSizes] = useState({
     matches: { width: 560, height: 480 },
@@ -145,9 +157,10 @@ export function SimulationProvider({ children }) {
     bracket: { width: 800, height: 500 },
     readme: { width: 320, height: 350 },
     about: { width: 380, height: 300 },
+    teamInfo: { width: 400, height: 420 },
   });
   const [maximizedWindows, setMaximizedWindows] = useState({
-    matches: false, standings: false, thirds: false, bracket: false, readme: false, about: false,
+    matches: false, standings: false, thirds: false, bracket: false, readme: false, about: false, teamInfo: false
   });
 
   // --- Digital clock ---
@@ -357,6 +370,7 @@ export function SimulationProvider({ children }) {
     setIsThirdsMinimized(false);
     setIsBracketOpen(true);
     setIsBracketMinimized(false);
+    setIsTeamInfoOpen(false);
     setKnockoutScores({});
     setActiveKnockoutRound('r32');
     setFocusedWindow('matches');
@@ -467,6 +481,10 @@ export function SimulationProvider({ children }) {
     showReadme, setShowReadme,
     isAboutOpen, setIsAboutOpen,
     isAboutMinimized, setIsAboutMinimized,
+    isTeamInfoOpen, setIsTeamInfoOpen,
+    isTeamInfoMinimized, setIsTeamInfoMinimized,
+    selectedTeamCode, setSelectedTeamCode,
+    openTeamInfo,
     focusedWindow, setFocusedWindow,
     isStartMenuOpen, setIsStartMenuOpen,
     selectedShortcut, handleShortcutClick,

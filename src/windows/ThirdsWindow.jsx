@@ -28,6 +28,7 @@ export default function ThirdsWindow() {
     memoizedThirdsList,
     isThirdsOpen, setIsThirdsOpen,
     isThirdsMinimized, setIsThirdsMinimized,
+    openTeamInfo,
   } = useSimulation();
 
   const bodyContent = (
@@ -72,7 +73,7 @@ export default function ThirdsWindow() {
                       <td className="text-center text-bold" style={{ opacity: 0.8 }}>{team.group}</td>
                       <td>
                         <div className="retro-table-team">
-                          <img src={flagUrl} alt={teamEs} className="retro-table-flag" />
+                          <img src={flagUrl} alt={teamEs} className="retro-table-flag" onClick={() => openTeamInfo(team.country)} style={{ cursor: 'pointer' }} />
                           <span className="retro-table-team-name" title={teamEs}>{teamEs}</span>
                         </div>
                       </td>
