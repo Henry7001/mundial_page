@@ -24,7 +24,7 @@ const translatePosition = (pos) => {
   return pos;
 };
 
-export default function TeamInfoWindow() {
+export default function TeamInfoWindow({ isMobile = false }) {
   const { 
     isTeamInfoOpen, setIsTeamInfoOpen, 
     isTeamInfoMinimized, setIsTeamInfoMinimized, 
@@ -123,16 +123,16 @@ export default function TeamInfoWindow() {
   const teamMatches = allDisplayMatches.filter(m => m.home_team_country === selectedTeamCode || m.away_team_country === selectedTeamCode);
 
   const bodyContent = (
-    <div className="win95-dialog-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '12px', flex: 1, overflowY: 'auto' }}>
+    <div className="win95-dialog-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '12px', flex: 1, overflowY: 'auto', background: 'var(--win-bg)' }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <img src={apiTeamData?.strBadge || flagUrl} alt={teamNameEs} style={{ width: '64px', height: 'auto', border: apiTeamData?.strBadge ? 'none' : '1px solid #000' }} />
         <div>
-          <h2 style={{ margin: '0 0 4px' }}>{teamNameEs}</h2>
-          {groupData && <p style={{ margin: '2px 0', fontSize: '12px' }}>Grupo: {groupData.letter}</p>}
+          <h2 style={{ margin: '0 0 4px', color: 'var(--win-text)' }}>{teamNameEs}</h2>
+          {groupData && <p style={{ margin: '2px 0', fontSize: '12px', color: 'var(--win-text)' }}>Grupo: {groupData.letter}</p>}
           {apiTeamData?.intFormedYear && <p style={{ margin: '2px 0', fontSize: '11px', color: '#555' }}>Fundado en: {apiTeamData.intFormedYear}</p>}
-          {apiTeamData?.strManager && <p style={{ margin: '2px 0', fontSize: '11px' }}>DT: {apiTeamData.strManager}</p>}
+          {apiTeamData?.strManager && <p style={{ margin: '2px 0', fontSize: '11px', color: 'var(--win-text)' }}>DT: {apiTeamData.strManager}</p>}
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export default function TeamInfoWindow() {
       {teamStandings && (
         <fieldset className="win95-groupbox">
           <legend>Estadísticas del Grupo</legend>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', fontSize: '11px', textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', fontSize: '11px', textAlign: 'center', color: 'var(--win-text)' }}>
             <div><strong>PJ:</strong><br/>{teamStandings.games_played}</div>
             <div><strong>G:</strong><br/>{teamStandings.wins}</div>
             <div><strong>E:</strong><br/>{teamStandings.draws}</div>
@@ -156,7 +156,7 @@ export default function TeamInfoWindow() {
       {/* MATCHES SECTION */}
       <fieldset className="win95-groupbox">
         <legend>Partidos</legend>
-        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '11px', lineHeight: '1.6' }}>
+        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '11px', lineHeight: '1.6', color: 'var(--win-text)' }}>
           {teamMatches.map(m => {
             const isHome = m.home_team_country === selectedTeamCode;
             const oppCode = isHome ? m.away_team_country : m.home_team_country;
@@ -178,7 +178,7 @@ export default function TeamInfoWindow() {
         <legend>Info & Plantilla (Live API)</legend>
         
         {loadingApi && (
-          <div style={{ textAlign: 'center', padding: '10px', fontSize: '12px' }}>
+          <div style={{ textAlign: 'center', padding: '10px', fontSize: '12px', color: 'var(--win-text)' }}>
             <span className="win95-hourglass">⌛</span> Consultando base de datos TheSportsDB...
           </div>
         )}
@@ -188,8 +188,8 @@ export default function TeamInfoWindow() {
         )}
 
         {!loadingApi && apiTeamData && (
-          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
-            <div style={{ maxHeight: '100px', overflowY: 'auto', marginBottom: '8px', border: '1px solid #ccc', padding: '4px', background: 'var(--win-bg-sunken)' }}>
+          <div style={{ fontSize: '11px', lineHeight: '1.4', color: 'var(--win-text)' }}>
+            <div style={{ maxHeight: '100px', overflowY: 'auto', marginBottom: '8px', border: '1px solid var(--win-border-dark)', padding: '4px', background: 'var(--win-bg-sunken)' }}>
               <strong>Historia / Descripción:</strong><br/>
               {isTranslating ? (
                 <span style={{ color: '#666', fontStyle: 'italic' }}>Traduciendo descripción al español...</span>
@@ -201,21 +201,21 @@ export default function TeamInfoWindow() {
             {apiPlayers.length > 0 ? (
               <div>
                 <strong>Jugadores ({apiPlayers.length}):</strong>
-                <div style={{ maxHeight: '150px', overflowY: 'auto', marginTop: '4px', border: '1px solid #ccc', background: 'var(--win-bg-sunken)' }}>
+                <div style={{ maxHeight: '150px', overflowY: 'auto', marginTop: '4px', border: '1px solid var(--win-border-dark)', background: 'var(--win-bg-sunken)' }}>
                   <table className="retro-table" style={{ width: '100%', fontSize: '10px' }}>
                     <thead style={{ position: 'sticky', top: 0, background: '#e0dfe3', zIndex: 1 }}>
                       <tr>
-                        <th style={{ textAlign: 'left', padding: '2px 4px' }}>Jugador</th>
-                        <th style={{ textAlign: 'left', padding: '2px 4px' }}>Posición</th>
-                        <th style={{ textAlign: 'left', padding: '2px 4px' }}>Club Actual</th>
+                        <th style={{ textAlign: 'left', padding: '2px 4px', color: '#000' }}>Jugador</th>
+                        <th style={{ textAlign: 'left', padding: '2px 4px', color: '#000' }}>Posición</th>
+                        <th style={{ textAlign: 'left', padding: '2px 4px', color: '#000' }}>Club Actual</th>
                       </tr>
                     </thead>
                     <tbody>
                       {apiPlayers.map(p => (
                         <tr key={p.idPlayer}>
-                          <td style={{ padding: '2px 4px' }}>{p.strPlayer}</td>
-                          <td style={{ padding: '2px 4px' }}>{translatePosition(p.strPosition)}</td>
-                          <td style={{ padding: '2px 4px' }}>{p.strTeam || '-'}</td>
+                          <td style={{ padding: '2px 4px', color: '#000' }}>{p.strPlayer}</td>
+                          <td style={{ padding: '2px 4px', color: '#000' }}>{translatePosition(p.strPosition)}</td>
+                          <td style={{ padding: '2px 4px', color: '#000' }}>{p.strTeam || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -236,6 +236,23 @@ export default function TeamInfoWindow() {
       </div>
     </div>
   );
+
+  if (isMobile) {
+    if (!isTeamInfoOpen) return null;
+    return (
+      <div className="mobile-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div className="mobile-modal-content" style={{ background: 'var(--win-bg)', width: '100%', maxWidth: '400px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', border: '2px solid var(--win-border-dark)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <div className="mobile-modal-header" style={{ padding: '8px 12px', borderBottom: '1px solid #ccc', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--win-title-bg)', color: 'var(--win-title-text)' }}>
+            <span>ℹ️ Info: {teamNameEs}</span>
+            <button className="win95-title-btn close" onClick={() => setIsTeamInfoOpen(false)} style={{ width: '16px', height: '16px', lineHeight: '16px' }}>X</button>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {bodyContent}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <WindowShell

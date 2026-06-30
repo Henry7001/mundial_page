@@ -336,7 +336,7 @@ function DesktopShell() {
               {activeMobileTab === 'matches' && <div className="mobile-tab-content matches-tab">{renderMatchesContent()}</div>}
               {activeMobileTab === 'standings' && <div className="mobile-tab-content standings-tab">{renderStandingsContent()}</div>}
               {activeMobileTab === 'thirds' && <div className="mobile-tab-content thirds-tab">{renderThirdsContent()}</div>}
-              {activeMobileTab === 'bracket' && <div className="mobile-tab-content bracket-tab"><BracketWindow /></div>}
+              {activeMobileTab === 'bracket' && <div className="mobile-tab-content bracket-tab"><BracketWindow isMobile={true} /></div>}
               {activeMobileTab === 'settings' && (
                 <div className="mobile-tab-content settings-tab">
                   <div className="mobile-settings-page">
@@ -356,6 +356,8 @@ function DesktopShell() {
                   </div>
                 </div>
               )}
+              
+              <TeamInfoWindow isMobile={true} />
             </>
           )}
         </div>

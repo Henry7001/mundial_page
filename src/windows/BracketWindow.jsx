@@ -104,7 +104,7 @@ function BracketCard({ m }) {
   );
 }
 
-export default function BracketWindow() {
+export default function BracketWindow({ isMobile = false }) {
   const {
     memoizedBracketMatches,
     isGroupStageOver,
@@ -250,6 +250,8 @@ export default function BracketWindow() {
       </div>
     </div>
   );
+
+  if (isMobile) return bodyContent;
 
   return (
     <WindowShell
