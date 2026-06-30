@@ -3,10 +3,10 @@ import { getCountryNameEs } from './countries';
 // Pre-defined pairings for the 16 Round of 32 matches in the 2026 World Cup format
 export const slotMappings = [
   { id: 73, name: 'M73', home: { type: 'runner_up', group: 'A' }, away: { type: 'runner_up', group: 'B' } },
-  { id: 74, name: 'M74', home: { type: 'winner', group: 'E' }, away: { type: 'third', allowed: ['A','B','C','D','F'] } },
+  { id: 77, name: 'M77', home: { type: 'winner', group: 'I' }, away: { type: 'third', allowed: ['C','D','F','G','H'] } },
   { id: 75, name: 'M75', home: { type: 'winner', group: 'F' }, away: { type: 'runner_up', group: 'C' } },
   { id: 76, name: 'M76', home: { type: 'winner', group: 'C' }, away: { type: 'runner_up', group: 'F' } },
-  { id: 77, name: 'M77', home: { type: 'winner', group: 'I' }, away: { type: 'third', allowed: ['C','D','F','G','H'] } },
+  { id: 74, name: 'M74', home: { type: 'winner', group: 'E' }, away: { type: 'third', allowed: ['A','B','C','D','F'] } },
   { id: 78, name: 'M78', home: { type: 'runner_up', group: 'E' }, away: { type: 'runner_up', group: 'I' } },
   { id: 79, name: 'M79', home: { type: 'winner', group: 'A' }, away: { type: 'third', allowed: ['C','E','F','H','I'] } },
   { id: 80, name: 'M80', home: { type: 'winner', group: 'L' }, away: { type: 'third', allowed: ['E','H','I','J','K'] } },
